@@ -1,10 +1,11 @@
 package com.dfire.core.job;
 
+import com.dfire.common.constants.Constants;
 import com.dfire.common.constants.RunningJobKeyConstant;
-import com.dfire.core.config.HeraGlobalEnvironment;
+import com.dfire.common.enums.JobRunTypeEnum;
+import com.dfire.common.exception.HeraException;
+import com.dfire.config.HeraGlobalEnv;
 import com.dfire.logs.ErrorLog;
-import com.dfire.logs.HeraLog;
-import org.apache.commons.lang.ArrayUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -22,8 +23,6 @@ import java.util.List;
  */
 public class SparkJob extends ProcessJob {
 
-    public final String UDF_SQL_NAME = "hera_udf.sql";
-
 
     public SparkJob(JobContext jobContext) {
         super(jobContext);
@@ -40,105 +39,77 @@ public class SparkJob extends ProcessJob {
         File file = new File(jobContext.getWorkDir() + File.separator + System.currentTimeMillis() + ".spark");
         if (!file.exists()) {
             try {
-                file.createNewFile();
+                if (!file.createNewFile()) {
+                    throw new IOException();
+                }
             } catch (IOException e) {
-                ErrorLog.error("创建.spark失败");
+                ErrorLog.error("创建.spark失败", e);
             }
         }
 
-        OutputStreamWriter writer = null;
-        try {
-            writer = new OutputStreamWriter(new FileOutputStream(file),
-                    Charset.forName(jobContext.getProperties().getProperty("hera.fs.encode", "utf-8")));
-            writer.write(script.replaceAll("^--.*", "--"));
+        try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file),
+                Charset.forName(jobContext.getProperties().getProperty("hera.fs.encode", "utf-8")))) {
+            writer.write(dosToUnix(script.replaceAll("^--.*", "--")));
         } catch (Exception e) {
-            jobContext.getHeraJobHistory().getLog().appendHeraException(e);
-        } finally {
-            if (writer != null) {
-                writer.close();
-            }
+            throw new HeraException("写入文件失败:", e);
         }
 
         getProperties().setProperty(RunningJobKeyConstant.RUN_SPARK_PATH, file.getAbsolutePath());
+
         return super.run();
     }
 
     @Override
-    public List<String> getCommandList() {
+    public List<String> getCommandList() throws HeraException {
         String sparkFilePath = getProperty(RunningJobKeyConstant.RUN_SPARK_PATH, "");
+
+        String shellPrefix = getJobPrefix();
+        boolean isDocToUnix = checkDosToUnix(sparkFilePath);
         List<String> list = new ArrayList<>();
-        StringBuilder sb = new StringBuilder();
-
-        String shellPrefix = "";
-        String user = "";
-        if (jobContext.getRunType() == 1 || jobContext.getRunType() == 2) {
-            user = jobContext.getHeraJobHistory().getOperator();
-            shellPrefix = "sudo -u " + user;
-        } else if (jobContext.getRunType() == 3) {
-            user = jobContext.getDebugHistory().getOwner();
-            shellPrefix = "sudo -u " + user;
-        } else if (jobContext.getRunType() == 4) {
-            shellPrefix = "";
-        } else {
-            HeraLog.info("没有运行类型 runType = " + jobContext.getRunType());
-        }
-
-        String[] excludeFile = HeraGlobalEnvironment.excludeFile.split(";");
-        boolean isDocToUnix = true;
-        if (!ArrayUtils.isEmpty(excludeFile)) {
-            String lowCaseShellPath = sparkFilePath.toLowerCase();
-            for (String exclude : excludeFile) {
-                if (lowCaseShellPath.endsWith("." + exclude)) {
-                    isDocToUnix = false;
-                    break;
-                }
-            }
-        }
-
         if (isDocToUnix) {
             list.add("dos2unix " + sparkFilePath);
             log("dos2unix file" + sparkFilePath);
-        }
-
-        sb.append(" -f " + sparkFilePath + " " +
-                HeraGlobalEnvironment.getSparkMaster() + " " +
-                HeraGlobalEnvironment.getSparkDriverCores() + " " +
-                HeraGlobalEnvironment.getSparkDriverMemory());
-//                HeraGlobalEnvironment.getSparkExecutorCores() + " " +
-//                HeraGlobalEnvironment.getSparkExecutorMemory());
-
-        if (shellPrefix.trim().length() > 0) {
-
-            String tmpFilePath = jobContext.getWorkDir() + File.separator + "tmp.sh";
-            File tmpFile = new File(tmpFilePath);
-            OutputStreamWriter tmpWriter = null;
-            if (!tmpFile.exists()) {
-                try {
-                    tmpFile.createNewFile();
-                    tmpWriter = new OutputStreamWriter(new FileOutputStream(tmpFile),
-                            Charset.forName(jobContext.getProperties().getProperty("hera.fs.encode", "utf-8")));
-                    tmpWriter.write("/opt/app/spark231/bin/spark-sql " + sb.toString());
-                } catch (Exception e) {
-                    jobContext.getHeraJobHistory().getLog().appendHeraException(e);
-                } finally {
-                   if (tmpWriter != null) {
-                       try {
-                           tmpWriter.close();
-                       } catch (IOException e) {
-                           e.printStackTrace();
-                       }
-                   }
-                }
-                list.add("chmod -R 777 " + jobContext.getWorkDir());
-                list.add(shellPrefix + " sh " + tmpFilePath);
-            } else {
-                list.add("chmod -R 777 " + jobContext.getWorkDir());
-                list.add(shellPrefix + " /opt/app/spark231/bin/spark-sql " + sb.toString());
-            }
-
         } else {
-            list.add("/opt/app/spark231/bin/spark-sql " + sb.toString());
+            log("file path :" + sparkFilePath);
         }
+
+
+        String prefix = getProperty(Constants.HERA_SPARK_CONF,
+                getProperty(HeraGlobalEnv.getArea() + Constants.POINT + Constants.HERA_SPARK_CONF,
+                        HeraGlobalEnv.getSparkMaster()
+                                + " "
+                                + HeraGlobalEnv.getSparkDriverCores()
+                                + " "
+                                + HeraGlobalEnv.getSparkDriverMemory()));
+        String tmpFilePath = jobContext.getWorkDir() + File.separator + "tmp.sh";
+        File tmpFile = new File(tmpFilePath);
+        OutputStreamWriter tmpWriter = null;
+        if (!tmpFile.exists()) {
+            try {
+                if (!tmpFile.createNewFile()) {
+                    throw new HeraException("创建临时文件失败" + tmpFile.getAbsolutePath());
+                }
+                tmpWriter = new OutputStreamWriter(new FileOutputStream(tmpFile),
+                        Charset.forName(jobContext.getProperties().getProperty("hera.fs.encode", "utf-8")));
+                tmpWriter.write(generateRunCommand(JobRunTypeEnum.Spark, prefix, sparkFilePath));
+            } catch (Exception e) {
+                throw new HeraException("组装命令异常", e);
+            } finally {
+                if (tmpWriter != null) {
+                    try {
+                        tmpWriter.close();
+                    } catch (IOException e) {
+                        ErrorLog.error("关闭输出流异常", e);
+                    }
+                }
+            }
+            list.add("chmod -R 777 " + jobContext.getWorkDir());
+            list.add(shellPrefix + " sh " + tmpFilePath);
+        } else {
+            list.add("chmod -R 777 " + jobContext.getWorkDir());
+            list.add(shellPrefix + " " + HeraGlobalEnv.getJobSparkSqlBin() + "-f" + sparkFilePath);
+        }
+
         return list;
     }
 }

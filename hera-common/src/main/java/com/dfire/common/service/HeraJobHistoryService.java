@@ -2,7 +2,9 @@ package com.dfire.common.service;
 
 import com.dfire.common.entity.HeraJobHistory;
 import com.dfire.common.entity.vo.PageHelper;
+import com.dfire.common.entity.vo.PageHelperTimeRange;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -24,11 +26,13 @@ public interface HeraJobHistoryService {
 
     int update(HeraJobHistory heraJobHistory);
 
+    int updateStatusAndIllustrate(Integer id, String status, String illustrate, Date endTime);
+
     List<HeraJobHistory> getAll();
 
     HeraJobHistory findById(String id);
 
-    HeraJobHistory findByActionId(String actionId);
+    List<HeraJobHistory> findByActionId(String actionId);
 
     Integer updateHeraJobHistoryLogAndStatus(HeraJobHistory build);
 
@@ -42,8 +46,11 @@ public interface HeraJobHistoryService {
 
     HeraJobHistory findLogById(Integer id);
 
-    Map<String, Object> findLogByPage(PageHelper pageHelper);
+    Map<String, Object> findLogByPage(PageHelperTimeRange pageHelperTimeRange);
 
     List<HeraJobHistory> findTodayJobHistory();
 
+    void deleteHistoryRecord(Integer beforeDay);
+
+    HeraJobHistory findNewest(String jobId);
 }

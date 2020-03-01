@@ -11,10 +11,10 @@ import com.dfire.common.vo.MachineInfoVo;
 import com.dfire.common.vo.OSInfoVo;
 import com.dfire.common.vo.ProcessMonitorVo;
 import com.dfire.common.vo.WorkInfoVo;
-import com.dfire.core.config.HeraGlobalEnvironment;
+import com.dfire.config.HeraGlobalEnv;
 import com.dfire.core.job.Job;
 import com.dfire.core.message.HeartBeatInfo;
-import com.dfire.core.netty.NettyChannel;
+import com.dfire.core.netty.cluster.FailFastCluster;
 import com.dfire.core.netty.worker.request.WorkerHandleWebRequest;
 import com.dfire.core.netty.worker.request.WorkerHandlerHeartBeat;
 import com.dfire.logs.ErrorLog;
@@ -62,13 +62,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 public class WorkClient {
 
+    public ScheduledThreadPoolExecutor workSchedule;
     private Bootstrap bootstrap;
     private EventLoopGroup eventLoopGroup;
     @Autowired
     private WorkContext workContext;
     private ScheduledExecutorService service;
     private AtomicBoolean clientSwitch = new AtomicBoolean(false);
-    public ScheduledThreadPoolExecutor workSchedule;
 
     {
         workSchedule = new ScheduledThreadPoolExecutor(3, new NamedThreadFactory("work-schedule", false));
@@ -101,6 +101,7 @@ public class WorkClient {
         }
 
         workContext.setWorkClient(this);
+        workContext.init();
         eventLoopGroup = new NioEventLoopGroup();
         bootstrap = new Bootstrap();
         bootstrap.group(eventLoopGroup)
@@ -133,7 +134,7 @@ public class WorkClient {
                             ErrorLog.error("send heart beat failed ,failCount :" + failCount);
                         } else {
                             failCount = 0;
-                            HeartLog.info("send heart beat success:{}", workContext.getServerChannel().getRemoteAddress());
+                            HeartLog.debug("send heart beat success:{}", workContext.getServerChannel().getRemoteAddress());
                         }
                     } else {
                         ErrorLog.error("server channel can not find on " + WorkContext.host);
@@ -141,10 +142,10 @@ public class WorkClient {
                 } catch (Exception e) {
                     ErrorLog.error("heart beat error:", e);
                 } finally {
-                    workSchedule.schedule(this, (failCount + 1) * HeraGlobalEnvironment.getHeartBeat(), TimeUnit.SECONDS);
+                    workSchedule.schedule(this, (failCount + 1) * HeraGlobalEnv.getHeartBeat(), TimeUnit.SECONDS);
                 }
             }
-        }, HeraGlobalEnvironment.getHeartBeat(), TimeUnit.SECONDS);
+        }, HeraGlobalEnv.getHeartBeat(), TimeUnit.SECONDS);
 
         /**
          * 定时 刷新日志到数据库
@@ -155,7 +156,7 @@ public class WorkClient {
              * @param job
              * @param e
              */
-            private void  printScheduleLog(Job job, Exception e) {
+            private void printScheduleLog(Job job, Exception e) {
                 try {
                     HeraJobHistoryVo his = job.getJobContext().getHeraJobHistory();
                     String logContent = his.getLog().getContent();
@@ -168,7 +169,7 @@ public class WorkClient {
                             ", logLength:" +
                             logContent.length() + "]", e);
                 } catch (Exception ex) {
-                    ErrorLog.error("log exception error!");
+                    ErrorLog.error("log exception error!", ex);
                 }
             }
 
@@ -190,14 +191,14 @@ public class WorkClient {
                             ", logLength:" +
                             logContent.length() + "]", e);
                 } catch (Exception ex) {
-                    ErrorLog.error("log exception error!");
+                    ErrorLog.error("log exception error!", ex);
                 }
             }
 
             @Override
             public void run() {
                 try {
-                    for (Job job : workContext.getRunning().values()) {
+                    for (Job job : new ArrayList<>(workContext.getRunning().values())) {
                         try {
                             HeraJobHistoryVo history = job.getJobContext().getHeraJobHistory();
                             workContext.getHeraJobHistoryService().updateHeraJobHistoryLog(BeanConvertUtils.convert(history));
@@ -206,7 +207,7 @@ public class WorkClient {
                         }
                     }
 
-                    for (Job job : workContext.getManualRunning().values()) {
+                    for (Job job : new ArrayList<>(workContext.getManualRunning().values())) {
                         try {
                             HeraJobHistoryVo history = job.getJobContext().getHeraJobHistory();
                             workContext.getHeraJobHistoryService().updateHeraJobHistoryLog(BeanConvertUtils.convert(history));
@@ -215,7 +216,7 @@ public class WorkClient {
                         }
                     }
 
-                    for (Job job : workContext.getDebugRunning().values()) {
+                    for (Job job : new ArrayList<>(workContext.getDebugRunning().values())) {
                         try {
                             HeraDebugHistoryVo history = job.getJobContext().getDebugHistory();
                             workContext.getHeraDebugHistoryService().updateLog(BeanConvertUtils.convert(history));
@@ -251,18 +252,18 @@ public class WorkClient {
         ChannelFutureListener futureListener = (future) -> {
             try {
                 if (future.isSuccess()) {
-                    workContext.setServerChannel(new NettyChannel(future.channel()));
+                    workContext.setServerChannel(FailFastCluster.wrap(future.channel()));
                     SocketLog.info(workContext.getServerChannel().toString());
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                ErrorLog.error("连接master异常", e);
             } finally {
                 latch.countDown();
             }
         };
-        ChannelFuture connectFuture = bootstrap.connect(new InetSocketAddress(host, HeraGlobalEnvironment.getConnectPort()));
+        ChannelFuture connectFuture = bootstrap.connect(new InetSocketAddress(host, HeraGlobalEnv.getConnectPort()));
         connectFuture.addListener(futureListener);
-        if (!latch.await(HeraGlobalEnvironment.getRequestTimeout(), TimeUnit.SECONDS)) {
+        if (!latch.await(HeraGlobalEnv.getRequestTimeout(), TimeUnit.SECONDS)) {
             connectFuture.removeListener(futureListener);
             connectFuture.cancel(true);
             throw new ExecutionException(new TimeoutException("connect server consumption of 2 seconds"));
@@ -286,10 +287,8 @@ public class WorkClient {
         HeraDebugHistoryVo history = job.getJobContext().getDebugHistory();
         history.setEndTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
         history.setStatus(StatusEnum.FAILED);
-        workContext.getHeraDebugHistoryService().update(BeanConvertUtils.convert(history));
         history.getLog().appendHera("任务被取消");
         workContext.getHeraDebugHistoryService().update(BeanConvertUtils.convert(history));
-
     }
 
     /**
@@ -298,21 +297,19 @@ public class WorkClient {
      * @param actionId
      */
     public void cancelManualJob(String actionId) {
-        Job job = workContext.getManualRunning().get(actionId);
-        workContext.getManualRunning().remove(actionId);
+        cancelJob(workContext.getManualRunning().remove(actionId));
+    }
+
+    private void cancelJob(Job job) {
         job.cancel();
         HeraJobHistoryVo history = job.getJobContext().getHeraJobHistory();
-        history.setEndTime(new Date());
         String illustrate = history.getIllustrate();
         if (illustrate != null && illustrate.trim().length() > 0) {
-            history.setIllustrate(illustrate + "；手动取消该任务");
+            illustrate += ";手动取消该任务";
         } else {
-            history.setIllustrate("手动取消该任务");
+            illustrate = "手动取消该任务";
         }
-        history.setStatusEnum(StatusEnum.FAILED);
-        history.getLog().appendHera("任务被取消");
-        workContext.getHeraJobHistoryService().updateHeraJobHistoryLogAndStatus(BeanConvertUtils.convert(history));
-
+        workContext.getHeraJobHistoryService().updateStatusAndIllustrate(Integer.parseInt(history.getId()), StatusEnum.FAILED.toString(), illustrate, new Date());
     }
 
     /**
@@ -321,21 +318,7 @@ public class WorkClient {
      * @param actionId
      */
     public void cancelScheduleJob(String actionId) {
-        Job job = workContext.getRunning().get(actionId);
-        workContext.getRunning().remove(actionId);
-        job.cancel();
-
-        HeraJobHistoryVo history = job.getJobContext().getHeraJobHistory();
-        history.setEndTime(new Date());
-        String illustrate = history.getIllustrate();
-        if (illustrate != null && illustrate.trim().length() > 0) {
-            history.setIllustrate(illustrate + "；手动取消该任务");
-        } else {
-            history.setIllustrate("手动取消该任务");
-        }
-        history.setStatusEnum(StatusEnum.FAILED);
-        history.getLog().appendHera("任务被取消");
-        workContext.getHeraJobHistoryService().update(BeanConvertUtils.convert(history));
+        cancelJob(workContext.getRunning().remove(actionId));
 
     }
 

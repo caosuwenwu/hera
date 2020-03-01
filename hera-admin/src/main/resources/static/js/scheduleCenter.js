@@ -1,4 +1,4 @@
-let nodes, edges, g, headNode, currIndex = 0, len, inner, initialScale = 0.75, zoom, nodeIndex = {}, graphType,
+let nodes, edges, g, headNode, currIndex = 0, len, inner, initialScale = 1.25, zoom, nodeIndex = {}, graphType,
     codeMirror, themeSelect = $('#themeSelect');
 
 layui.use(['table'], function () {
@@ -11,7 +11,7 @@ layui.use(['table'], function () {
         let selected;
         let triggerType;
         let allArea = [];
-        let groupTaskTable, groupTaskType, focusId = -1;
+        let groupTaskTable, groupTaskType, jobDt = '', focusId = -1;
         let inheritConfigCM, selfConfigCM;
         let editor = $('#editor');
         let setting = {
@@ -50,16 +50,6 @@ layui.use(['table'], function () {
             inheritConfigCM.refresh();
         }
 
-        /**
-         * 把当前选中的节点存入localStorage
-         * 页面刷新后，会根据"defaultId"设置当前选中的节点
-         * 避免页面刷新丢失
-         * @param id    节点ID
-         */
-        function setCurrentId(id) {
-
-            localStorage.setItem("defaultId", id);
-        }
 
         /**
          * 设置当前默认选中的节点
@@ -145,6 +135,15 @@ layui.use(['table'], function () {
 
         });
 
+        /**
+         * 查看操作记录
+         */
+        $('#jobOperate [name="record"]').on('click', function () {
+            $('#recordTable').bootstrapTable("destroy");
+            new recordTable(focusId).init();
+            $('#recordModal').modal('show');
+
+        });
         $('#jobOperate [name="addAdmin"]').on('click', function () {
             addAdmin();
         });
@@ -160,7 +159,7 @@ layui.use(['table'], function () {
                 type: "get",
                 data: {
                     jobId: focusId,
-                    type: isGroup
+                    type: isGroup ? "GROUP" : "JOB"
                 },
                 success: function (data) {
                     if (data.success) {
@@ -173,7 +172,6 @@ layui.use(['table'], function () {
                         let admins = new Array();
                         data.data['admin'].forEach(function (val) {
                             admins.push(val.uid);
-
                         });
                         $('#userList').selectpicker('val', admins);
 
@@ -194,7 +192,7 @@ layui.use(['table'], function () {
                 data: {
                     uIdS: JSON.stringify(uids),
                     id: focusId,
-                    type: isGroup
+                    type: isGroup ? "GROUP" : "JOB"
                 },
                 success: function (data) {
                     layer.msg(data.message);
@@ -207,7 +205,6 @@ layui.use(['table'], function () {
         $('#jobOperate [name="jobDag"]').on('click', function () {
             $('#jobDagModal').modal('show');
             $('#item').val($('#jobMessage [name="id"]').val());
-            keypath(0);
         });
 
         $("#groupOperate [name='addGroup']").on('click', function () {
@@ -250,7 +247,7 @@ layui.use(['table'], function () {
                 },
                 type: "post",
                 success: function (res) {
-                    layer.msg(res);
+                    layer.msg(res.message);
                 },
                 error: function (err) {
                     layer.msg(err);
@@ -421,6 +418,11 @@ layui.use(['table'], function () {
                 if (key !== null && key !== "" && key !== undefined) {
                     keys = key.split(" ");
                     length = keys.length;
+                    for (let i = 0; i < length; i++) {
+                        if (isNaN(keys[i])) {
+                            keys[i] = keys[i].toLowerCase();
+                        }
+                    }
                     let nodeShow = tree.getNodesByFilter(filterNodes);
                     if (nodeShow && nodeShow.length > 0) {
                         nodeShow.forEach(function (node) {
@@ -467,7 +469,7 @@ layui.use(['table'], function () {
                                 return true;
                             }
                         } else {//name搜索
-                            if (node.jobName.indexOf(keys[i]) != -1) {
+                            if (node.jobName.toLowerCase().indexOf(keys[i]) != -1) {
                                 if (isDepen) {
                                     node.isParent ? node.highlight = 1 : node.highlight = 2;
                                     tree.showNode(node);
@@ -547,8 +549,8 @@ layui.use(['table'], function () {
                 $.ajax({
                     url: base_url + "/scheduleCenter/updateJobMessage.do",
                     data: $('#jobMessageEdit form').serialize() + "&selfConfigs=" + encodeURIComponent(selfConfigCM.getValue()) +
-                    "&script=" + encodeURIComponent(codeMirror.getValue()) +
-                    "&id=" + focusId,
+                        "&script=" + encodeURIComponent(codeMirror.getValue()) +
+                        "&id=" + focusId,
                     type: "post",
                     success: function (data) {
                         if (data.success == false) {
@@ -562,7 +564,7 @@ layui.use(['table'], function () {
                 $.ajax({
                     url: base_url + "/scheduleCenter/updateGroupMessage.do",
                     data: $('#groupMessageEdit form').serialize() + "&selfConfigs=" + encodeURIComponent(selfConfigCM.getValue()) +
-                    "&resource=" + "&groupId=" + focusId,
+                        "&resource=" + "&groupId=" + focusId,
                     type: "post",
                     success: function (data) {
                         if (data.success == false) {
@@ -596,7 +598,7 @@ layui.use(['table'], function () {
                     url: base_url + "/scheduleCenter/deleteJob.do",
                     data: {
                         id: focusId,
-                        isGroup: isGroup
+                        type: isGroup ? "GROUP" : "JOB"
                     },
                     type: "post",
                     success: function (data) {
@@ -786,9 +788,14 @@ layui.use(['table'], function () {
                         data: {
                             jobId: id
                         },
-                        success: function (data) {
+                        success: function (result) {
+                            if (result.success === false) {
+                                layer.msg(result.message);
+                                return;
+                            }
+                            let data = result.data;
                             focusItem = data;
-                            if (data.runType == "Shell") {
+                            if (data.runType === "Shell") {
                                 codeMirror.setOption("mode", "text/x-sh");
                             } else {
                                 codeMirror.setOption("mode", "text/x-hive");
@@ -808,6 +815,9 @@ layui.use(['table'], function () {
                             $('#jobMessage [name="auto"]').removeClass("label-primary")
                                 .removeClass("label-default").removeClass("label-info")
                                 .addClass(data.auto === "开启" ? "label-primary" : data.auto === "失效" ? "label-info" : "label-default");
+                            $('#jobMessage [name="repeatRun"]').removeClass("label-primary")
+                                .removeClass("label-default").addClass(data.repeatRun === 1 ? "label-primary" : "label-default").val(data.repeatRun === 1 ? "是" : "否");
+
                             $('#jobOperate [name="monitor"]').text(data.focus ? "取消关注" : "关注该任务");
 
                             let areas = '';
@@ -835,11 +845,14 @@ layui.use(['table'], function () {
                         data: {
                             groupId: id
                         },
-                        success: function (data) {
+                        success: function (result) {
+                            if (result.success === false) {
+                                layer.msg(result.message);
+                            }
+                            var data = result.data;
                             focusItem = data;
                             formDataLoad("groupMessage form", data);
                             inheritConfigCM.setValue(parseJson(data.inheritConfig));
-
                             selfConfigCM.setValue(parseJson(data.configs));
                         }
 
@@ -884,12 +897,12 @@ layui.use(['table'], function () {
         }
 
         $("#manual").click(function () {
-            triggerType = 1;
+            triggerType = 2;
             setAction();
         });
 
         $("#manualRecovery").click(function () {
-            triggerType = 2;
+            triggerType = 3;
             setAction();
         });
 
@@ -914,6 +927,37 @@ layui.use(['table'], function () {
             });
             $('#myModal').modal('hide');
         });
+        
+        
+        $('#jobOperate [name="copyJob"]').on('click', function () {
+        	$('#copyJobModal').modal('show');
+        });
+        
+        $("#copyJobModal .add-btn").click(function () {
+            $.ajax({
+                url: base_url + "/scheduleCenter/copyJobFromExistsJob.do",
+                type: "post",
+                data: {
+                	jobId: focusId
+                },
+                success: function (res) {
+                    if (res.success === true) {
+                        window.location.reload();
+                        layer.msg(res.message);
+                    } else {
+                        layer.msg(res.message)
+                    }
+                	
+                },
+                error: function (err) {
+                    layer.msg(err);
+                }
+            });
+            $('#copyJobModal').modal('hide');
+        });
+        
+        
+        
 
         function setAction() {
             //获得版本
@@ -929,15 +973,13 @@ layui.use(['table'], function () {
                         return;
                     }
                     let jobVersion = "";
-                    data.forEach(function (action, index) {
+                    data.data.forEach(function (action, index) {
                         jobVersion += '<option value="' + action.id + '" >' + action.id + '</option>';
                     });
-
                     let jobVer = $('#selectJobVersion');
                     jobVer.empty();
                     jobVer.append(jobVersion);
                     jobVer.selectpicker('refresh');
-
                     $('#myModal').modal('show');
 
                 }
@@ -1032,7 +1074,12 @@ layui.use(['table'], function () {
                 $.ajax({
                     url: base_url + "/scheduleCenter/getHostGroupIds",
                     type: "get",
-                    success: function (data) {
+                    success: function (result) {
+                        if (result.success === false) {
+                            layer.msg(data.message);
+                            return;
+                        }
+                        let data = result.data;
                         let hostGroup = $('#jobMessageEdit [name="hostGroupId"]');
                         let option = '';
                         data.forEach(function (val) {
@@ -1203,31 +1250,63 @@ layui.use(['table'], function () {
         });
         $('#showAllBtn').click(function () {
             // 表格渲染
-            groupTaskType = 0;
+            groupTaskType = 'all';
+            jobDt = $('#jobDt').val();
             reloadGroupTaskTable();
 
         });
 
-
-        $('#groupOperate [name="showRunning"]').on('click', function () {
-            groupTaskType = 1;
+        $('#overviewOperator [name="showAll"]').on('click', function () {
+            groupTaskType = 'all';
+            jobDt = $('#jobDt').val();
             reloadGroupTaskTable();
         });
+
 
         $('#overviewOperator [name="showRunning"]').on('click', function () {
-            groupTaskType = 1;
+            groupTaskType = 'running';
+            jobDt = $('#jobDt').val();
             reloadGroupTaskTable();
         });
 
         $('#overviewOperator [name="showFaild"]').on('click', function () {
-            groupTaskType = 2;
+            groupTaskType = 'failed';
+            jobDt = $('#jobDt').val();
             reloadGroupTaskTable();
         });
 
-        $('#groupOperate [name="showFaild"]').on('click', function () {
-            groupTaskType = 2;
+        $('#overviewOperator [name="showSucc"]').on('click', function () {
+            groupTaskType = 'success';
+            jobDt = $('#jobDt').val();
             reloadGroupTaskTable();
         });
+
+
+        $('#groupOperate [name="showFaild"]').on('click', function () {
+            groupTaskType = 'failed';
+            jobDt = $('#jobDt').val();
+            reloadGroupTaskTable();
+        });
+
+        $('#groupOperate [name="showRunning"]').on('click', function () {
+            groupTaskType = 'running';
+            jobDt = $('#jobDt').val();
+            reloadGroupTaskTable();
+        });
+
+        $('#groupOperate [name="showAll"]').on('click', function () {
+            groupTaskType = 'all';
+            jobDt = $('#jobDt').val();
+            reloadGroupTaskTable();
+        });
+
+        $('#groupOperate [name="showSucc"]').on('click', function () {
+            groupTaskType = 'success';
+            jobDt = $('#jobDt').val();
+            reloadGroupTaskTable();
+        });
+
+
         $('#closeAll').click(function (e) {
             $("#showAllModal").modal('hide');
         });
@@ -1250,7 +1329,8 @@ layui.use(['table'], function () {
                     , url: base_url + '/scheduleCenter/getGroupTask'
                     , where: {
                         groupId: focusId,
-                        type: groupTaskType
+                        status: groupTaskType,
+                        dt: jobDt
                     }
                     , method: 'get'
                     , page: true
@@ -1260,7 +1340,8 @@ layui.use(['table'], function () {
                 groupTaskTable.reload({
                     where: {
                         groupId: focusId,
-                        type: groupTaskType
+                        status: groupTaskType,
+                        dt: jobDt
                     },
                     page: {
                         curr: 1 //重新从第 1 页开始
@@ -1326,7 +1407,8 @@ function initDate(data) {
     len = edges.length;
     currIndex = 0;
     g = new dagreD3.graphlib.Graph().setGraph({});
-    g.setNode(headNode.nodeName, {label: headNode.nodeName, style: "fill: #bd16ff" + ";" + headNode.remark})
+    labelname = headNode.descName +"["+ headNode.nodeName +"]";
+    g.setNode(headNode.nodeName, {label: labelname, style: "fill: #bd16ff" + ";" + headNode.remark})
     let nodeName;
     for (let i = 0; i < len; i++) {
         nodeName = edges[i].nodeA.nodeName;
@@ -1353,14 +1435,120 @@ function expandNextNode(nodeNum) {
     redraw();
 }
 
+let recordTable = function (jobId) {
+    let oTableInit = new Object();
+    let table = $('#recordTable');
+    oTableInit.init = function () {
+        table.bootstrapTable({
+            url: base_url + "/record/find",
+            pagination: true,
+            showPaginationSwitch: false,
+            search: false,
+            cache: false,
+            pageNumber: 1,
+            sidePagination: "server",
+            queryParamsType: "limit",
+            queryParams: function (params) {
+                return {
+                    pageSize: params.limit,
+                    offset: params.offset,
+                    jobId: jobId
+                };
+            },
+            onLoadSuccess: function (data) {
+                if (data.success === false) {
+                    layer.msg("加载操作日志失败");
+                    return;
+                }
+                console.log(data.data)
+                table.bootstrapTable("load", data.data)
+            },
+            pageList: [10, 25, 40, 60],
+            columns: [
+                {
+                    field: "type",
+                    title: "操作类型",
+                    align: 'center',
+                    halign: 'center'
+                }, {
+                    field: "logType",
+                    title: "日志类型",
+                    halign: 'center',
+                    align: 'center'
+                }, {
+                    field: "sso",
+                    title: "操作人",
+                    align: 'center',
+                    halign: 'center'
+                }, {
+                    field: "gname",
+                    title: "所在组",
+                    align: 'center',
+                    halign: 'center'
+                }, {
+                    field: "createTime",
+                    title: "操作时间",
+                    align: 'center',
+                    halign: 'center'
+                }
+            ],
+            detailView: true,
+            detailFormatter: function (index, row) {
+                return "<div id='compare'> </div>";
+            },
+            onExpandRow: function (index, row) {
+                var value = "", mode = "", highlight = true, connect = null, collapse = false;
+                $.ajax({
+                    url: base_url + "/record/now",
+                    data: {
+                        logId: row.logId,
+                        logType: row.logType,
+                        type: row.type
+                    },
+                    type: "get",
+                    async: false,
+                    success: function (res) {
+                        if (res.success == false) {
+                            layer.msg(res.message);
+                        }
+                        var data = res.data;
+                        if (data.runType === "Shell") {
+                            mode = "text/x-sh";
+                        } else {
+                            mode = "text/x-hive";
+                        }
+                        value = data.content;
+                    }
+                });
+                var target = document.getElementById("compare");
+                target.innerHTML = "";
+                CodeMirror.MergeView(target, {
+                    value: value,
+                    origLeft: row.content,
+                    orig: null,
+                    theme: 'eclipse',
+                    lineNumbers: true,
+                    mode: mode,
+                    matchBrackets: true,
+                    styleActiveLine: true,
+                    highlightDifferences: highlight,
+                    connect: connect,
+                    collapseIdentical: true,
+                    revertButtons: true
+                });
+            }
+        });
+    };
+    return oTableInit;
+}
+
 
 let JobLogTable = function (jobId) {
     let parameter = {jobId: jobId};
     let actionRow;
     let oTableInit = new Object();
-    let onExpand = -1;
     let table = $('#runningLogDetailTable');
-    let timerHandler = null;
+    let closeLog = false;
 
     function scheduleLog() {
 
@@ -1369,14 +1557,22 @@ let JobLogTable = function (jobId) {
             type: "get",
             data: {
                 id: actionRow.id,
+                jobId: actionRow.jobId
             },
-            success: function (data) {
-                if (data.status != 'running') {
-                    window.clearInterval(timerHandler);
-                }
+            success: function (result) {
                 let logArea = $('#log_' + actionRow.id);
+                if (result.success === false) {
+                    layer.msg(result.message);
+                    logArea[0].innerHTML = "无日志查看权限,请联系管理员进行配置";
+                    return;
+                }
+                let data = result.data;
+                if (data.status === 'running' && !closeLog) {
+                    window.setTimeout(scheduleLog, 5000);
+                }
                 logArea[0].innerHTML = data.log;
                 logArea.scrollTop(logArea.prop("scrollHeight"), 200);
+
                 actionRow.log = data.log;
                 actionRow.status = data.status;
             }
@@ -1384,15 +1580,14 @@ let JobLogTable = function (jobId) {
     }
 
     $('#jobLog').on('hide.bs.modal', function () {
-        if (timerHandler != null) {
-            window.clearInterval(timerHandler)
-        }
+        closeLog = true;
     });
 
     $('#jobLog [name="refreshLog"]').on('click', function () {
         table.bootstrapTable('refresh');
-        table.bootstrapTable('expandRow', onExpand);
+        closeLog = true;
     });
+
 
     oTableInit.init = function () {
         table.bootstrapTable({
@@ -1403,7 +1598,6 @@ let JobLogTable = function (jobId) {
             search: false,
             cache: false,
             pageNumber: 1,
-            showRefresh: true,           //是否显示刷新按钮
             showPaginationSwitch: false,  //是否显示选择分页数按钮
             sidePagination: "server",
             queryParamsType: "limit",
@@ -1411,61 +1605,114 @@ let JobLogTable = function (jobId) {
                 let tmp = {
                     pageSize: params.limit,
                     offset: params.offset,
-                    jobId: jobId
+                    jobId: jobId,
+                    beginDt: "1900-01-01",
+                    endDt: "2999-12-31",
+                    jobType: "job"
                 };
                 return tmp;
+            }, onLoadSuccess: function (data) {
+                if (data.success === false) {
+                    layer.msg("加载日志失败");
+                    return;
+                }
+                table.bootstrapTable("load", data.data)
             },
             pageList: [10, 25, 40, 60],
             columns: [
                 {
                     field: "id",
                     title: "id",
-                    width: "5%",
+                    width: "4%",
+                    align: 'center',
+                    halign: 'center'
                 }, {
                     field: "actionId",
                     title: "版本号",
-                    width: "15%",
+                    width: "11%",
+                    halign: 'center',
+                    align: 'center',
+                    formatter: function (val) {
+                        let val01 = val.substring(0, 8);
+                        let val02 = val.substring(8, 14);
+                        let val03 = val.substring(14);
+                        let re = '<a class="text-primary" >' + val01 + '</a>' + '<a class="text-warning" >' + val02 + '</a>' + '<a class="text-success" >' + val03 + '</a>';
+                        return re;
+                    }
                 }, {
                     field: "jobId",
                     title: "任务ID",
                     width: "5%",
-                }, {
-                    field: "executeHost",
-                    title: "执行机器ip",
-                    width: "8%",
-
+                    align: 'center',
+                    halign: 'center'
                 }, {
                     field: "status",
                     title: "执行状态",
-                    width: "8%",
-                }, {
-                    field: "operator",
-                    title: "执行人",
-                    width: "8%",
-
+                    width: "6%",
+                    halign: 'center',
+                    align: 'center',
+                    formatter: function (val) {
+                        if (val === 'running') {
+                            return '<a class="layui-btn layui-btn-xs layui-btn-warm" style="width: 100%;">' + val + '</a>';
+                        }
+                        if (val === 'success') {
+                            return '<a class="layui-btn layui-btn-xs" style="width: 100%;background-color:#2f8f42" >' + val + '</a>';
+                        }
+                        if (val === 'wait') {
+                            return '<a class="layui-btn layui-btn-xs layui-btn-disabled" style="width: 100%;">' + val + '</a>';
+                        }
+                        return '<a class="layui-btn layui-btn-xs layui-btn-danger" style="width: 100%;" >' + val + '</a>'
+                    }
                 }, {
                     field: "startTime",
                     title: "开始时间",
-                    width: "12%"
+                    width: "11%",
+                    align: 'center',
+                    halign: 'center'
+
                 }, {
                     field: "endTime",
                     title: "结束时间",
-                    width: "12%"
+                    width: "11%",
+                    align: 'center',
+                    halign: 'center'
+
                 }, {
+                    field: "durations",
+                    title: "时长(分)",
+                    width: "5%",
+                    halign: 'center',
+                    align: 'center',
+                    formatter: function (index, row) {
+                        let st = new Date(row['startTime']);
+                        if (row['endTime'] == null || row['endTime'] == '') {
+                            let ed = new Date();
+                            return (parseInt(ed - st) / 1000.0 / 60.0).toFixed(1);
+                        } else {
+                            let ed = new Date(row['endTime']);
+                            return (parseInt(ed - st) / 1000.0 / 60.0).toFixed(1);
+                        }
+                    }
+                }
+                , {
                     field: "illustrate",
                     title: "说明",
-                    width: "8%",
+                    width: "7%",
+                    halign: 'center',
+                    align: 'center',
                     formatter: function (val) {
                         if (val == null) {
                             return val;
                         }
-                        return "<span class='label label-info' data-toggle='tooltip' title='" + val + "' >" + val.slice(0, 6) + "</span>";
+                        return '<label class="label label-default" style="width: 100%;" data-toggle="tooltip" title="' + val + '" >' + val.slice(0, 6) + '</label>';
                     }
                 },
                 {
                     field: "triggerType",
                     title: "触发类型",
-                    width: "8%",
+                    width: "5%",
+                    halign: 'center',
+                    align: 'center',
                     formatter: function (value, row) {
                         if (row['triggerType'] == 1) {
                             return "自动调度";
@@ -1480,12 +1727,23 @@ let JobLogTable = function (jobId) {
                     }
                 },
                 {
+                    field: "executeHost",
+                    title: "机器|执行人",
+                    width: "12%",
+                    halign: 'center',
+                    align: 'center',
+                    formatter: function (index, row) {
+                        return row['executeHost'] + ' | ' + row['operator'];
+                    }
+                }, {
                     field: "status",
                     title: "操作",
-                    width: "10%",
+                    width: "5%",
+                    halign: 'center',
+                    align: 'center',
                     formatter: function (index, row) {
                         let html = '<a href="javascript:cancelJob(\'' + row['id'] + '\',\'' + row['jobId'] + '\')">取消任务</a>';
-                        if (row['status'] == 'running') {
+                        if (row['status'] === 'running') {
                             return html;
                         }
                     }
@@ -1500,19 +1758,11 @@ let JobLogTable = function (jobId) {
             },
             onExpandRow: function (index, row) {
                 actionRow = row;
-                if (index != onExpand) {
-                    table.bootstrapTable("collapseRow", onExpand);
-                }
-                onExpand = index;
-                if (row.status == "running") {
-                    scheduleLog();
-                    timerHandler = window.setInterval(scheduleLog, 3000);
-                } else {
-                    scheduleLog();
-                }
+                closeLog = false;
+                scheduleLog();
             },
             onCollapseRow: function (index, row) {
-                window.clearInterval(timerHandler)
+                closeLog = true;
             }
         });
     };

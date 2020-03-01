@@ -60,7 +60,7 @@ public interface HeraJobActionService {
     Integer updateStatusAndReadDependency(HeraAction heraAction);
 
 
-    List<HeraAction> getTodayAction();
+    List<HeraAction> getAfterAction(Long action);
 
     /**
      * 根据jobId 获取所有的版本
@@ -70,13 +70,14 @@ public interface HeraJobActionService {
      */
     List<String> getActionVersionByJobId(Long jobId);
 
-
     List<HeraActionVo> getNotRunScheduleJob();
 
     List<HeraActionVo> getFailedJob();
 
+    List<GroupTaskVo> findByJobIds(List<Integer> idList, String startDate, String endDate, TablePageForm pageForm, String status);
 
+    void deleteHistoryRecord(Integer beforeDay);
 
-    List<GroupTaskVo> findByJobIds(List<Integer> idList, String startDate, String endDate, TablePageForm pageForm, Integer type);
+    void deleteAllHistoryRecord(Integer beforeDay);
 
 }

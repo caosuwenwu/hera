@@ -5,11 +5,14 @@ import com.dfire.common.entity.HeraAction;
 import com.dfire.common.entity.HeraJobHistory;
 import com.dfire.common.entity.vo.HeraDebugHistoryVo;
 import com.dfire.common.enums.StatusEnum;
+import com.dfire.common.enums.TriggerTypeEnum;
 import com.dfire.common.util.BeanConvertUtils;
-import com.dfire.core.config.HeraGlobalEnvironment;
+import com.dfire.config.HeraGlobalEnv;
 import com.dfire.core.netty.master.MasterContext;
 import com.dfire.core.netty.master.MasterWorkHolder;
-import com.dfire.core.queue.JobElement;
+import com.dfire.core.netty.master.RunJobThreadPool;
+import com.dfire.common.vo.JobElement;
+import com.dfire.logs.ErrorLog;
 import com.dfire.logs.SocketLog;
 import com.dfire.protocol.*;
 
@@ -30,6 +33,16 @@ public class MasterCancelJob {
         RpcWebResponse.WebResponse webResponse = null;
         Integer debugId = Integer.parseInt(request.getId());
         HeraDebugHistoryVo debugHistory = context.getHeraDebugHistoryService().findById(debugId);
+
+
+        if (RunJobThreadPool.cancelJob(String.valueOf(debugId), TriggerTypeEnum.DEBUG)) {
+            webResponse = RpcWebResponse.WebResponse.newBuilder()
+                    .setRid(request.getRid())
+                    .setOperate(request.getOperate())
+                    .setStatus(ResponseStatus.Status.OK)
+                    .build();
+            SocketLog.info("任务在等待创建集群中，稍等会被取消{}", debugId);
+        }
         for (JobElement element : context.getDebugQueue()) {
             if (element.getJobId().equals(String.valueOf(debugId))) {
                 webResponse = RpcWebResponse.WebResponse.newBuilder()
@@ -52,7 +65,7 @@ public class MasterCancelJob {
                 try {
                     future.get(10, TimeUnit.SECONDS);
                 } catch (Exception e) {
-
+                    ErrorLog.error("请求超时 ", e);
                 }
                 webResponse = RpcWebResponse.WebResponse.newBuilder()
                         .setRid(request.getRid())
@@ -88,6 +101,16 @@ public class MasterCancelJob {
         HeraJobHistory heraJobHistory = context.getHeraJobHistoryService().findById(historyId);
         String actionId = heraJobHistory.getActionId();
         Integer jobId = heraJobHistory.getJobId();
+
+
+        if (RunJobThreadPool.cancelJob(actionId, TriggerTypeEnum.MANUAL)) {
+            webResponse = RpcWebResponse.WebResponse.newBuilder()
+                    .setRid(request.getRid())
+                    .setOperate(request.getOperate())
+                    .setStatus(ResponseStatus.Status.OK)
+                    .build();
+            SocketLog.info("任务在等待创建集群中，稍等会被取消{}", actionId);
+        }
         //手动执行队列 查找该job是否存在
         if (remove(context.getManualQueue().iterator(), actionId)) {
             webResponse = RpcWebResponse.WebResponse.newBuilder()
@@ -104,9 +127,9 @@ public class MasterCancelJob {
                             workHolder.getChannel(), JobExecuteKind.ExecuteKind.ManualKind, historyId);
                     workHolder.getManningRunning().remove(jobId);
                     try {
-                        future.get(HeraGlobalEnvironment.getRequestTimeout(), TimeUnit.SECONDS);
+                        future.get(HeraGlobalEnv.getRequestTimeout(), TimeUnit.SECONDS);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        ErrorLog.error("请求超时 ", e);
                     }
                     SocketLog.info("远程从删除该任务{}", heraJobHistory.getJobId());
                     webResponse = RpcWebResponse.WebResponse.newBuilder()
@@ -133,9 +156,9 @@ public class MasterCancelJob {
         context.getHeraJobHistoryService().update(heraJobHistory);
         HeraAction heraAction = context.getMaster().getHeraActionMap().get(Long.parseLong(actionId));
         if (heraAction != null) {
-            heraAction.setStatus(Constants.STATUS_FAILED);
+            heraAction.setStatus(StatusEnum.FAILED.toString());
         }
-        context.getHeraJobActionService().updateStatus(HeraAction.builder().id(Long.parseLong(actionId)).status(Constants.STATUS_FAILED).build());
+        context.getHeraJobActionService().updateStatus(HeraAction.builder().id(Long.parseLong(actionId)).status(StatusEnum.FAILED.toString()).build());
         return webResponse;
     }
 
@@ -145,6 +168,15 @@ public class MasterCancelJob {
         HeraJobHistory heraJobHistory = context.getHeraJobHistoryService().findById(historyId);
         Integer jobId = heraJobHistory.getJobId();
         String actionId = heraJobHistory.getActionId();
+
+        if (RunJobThreadPool.cancelJob(actionId, TriggerTypeEnum.SCHEDULE, TriggerTypeEnum.MANUAL_RECOVER)) {
+            webResponse = RpcWebResponse.WebResponse.newBuilder()
+                    .setRid(request.getRid())
+                    .setOperate(request.getOperate())
+                    .setStatus(ResponseStatus.Status.OK)
+                    .build();
+            SocketLog.info("任务在等待创建集群中，稍等会被取消{}", actionId);
+        }
 
         if (remove(context.getScheduleQueue().iterator(), actionId)) {
             webResponse = RpcWebResponse.WebResponse.newBuilder()
@@ -161,9 +193,9 @@ public class MasterCancelJob {
                             workHolder.getChannel(), JobExecuteKind.ExecuteKind.ScheduleKind, historyId);
                     workHolder.getRunning().remove(jobId);
                     try {
-                        future.get(HeraGlobalEnvironment.getRequestTimeout(), TimeUnit.SECONDS);
+                        future.get(HeraGlobalEnv.getRequestTimeout(), TimeUnit.SECONDS);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        ErrorLog.error("请求超时 ", e);
                     }
                     SocketLog.info("远程删除该任务{}", actionId);
                     webResponse = RpcWebResponse.WebResponse.newBuilder()
@@ -185,11 +217,11 @@ public class MasterCancelJob {
                     .build();
         }
         heraJobHistory.setEndTime(new Date());
-        heraJobHistory.setStatus(Constants.STATUS_FAILED);
+        heraJobHistory.setStatus(StatusEnum.FAILED.toString());
         heraJobHistory.setIllustrate(Constants.CANCEL_JOB_MESSAGE);
         HeraAction heraAction = context.getMaster().getHeraActionMap().get(Long.parseLong(actionId));
         if (heraAction != null) {
-            heraAction.setStatus(Constants.STATUS_FAILED);
+            heraAction.setStatus(StatusEnum.FAILED.toString());
         }
         context.getHeraJobHistoryService().update(heraJobHistory);
         context.getHeraJobActionService().updateStatus(HeraAction.builder().id(Long.parseLong(actionId)).status(StatusEnum.FAILED.toString()).build());

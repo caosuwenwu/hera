@@ -1,8 +1,10 @@
 package com.dfire.common.service.impl;
 
 import com.dfire.common.entity.HeraJobHistory;
-import com.dfire.common.entity.vo.JobLogHistory;
+import com.dfire.common.entity.vo.HeraJobHistoryVo;
+import com.dfire.common.entity.vo.JobLogHistoryVo;
 import com.dfire.common.entity.vo.PageHelper;
+import com.dfire.common.entity.vo.PageHelperTimeRange;
 import com.dfire.common.mapper.HeraJobHistoryMapper;
 import com.dfire.common.service.HeraJobHistoryService;
 import com.dfire.common.util.ActionUtil;
@@ -10,10 +12,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author: <a href="mailto:lingxiao@2dfire.com">凌霄</a>
@@ -52,6 +51,11 @@ public class HeraJobHistoryServiceImpl implements HeraJobHistoryService {
     }
 
     @Override
+    public int updateStatusAndIllustrate(Integer id, String status, String illustrate, Date endTime) {
+        return heraJobHistoryMapper.updateStatusAndIllustrate(id, status, illustrate, endTime);
+    }
+
+    @Override
     public List<HeraJobHistory> getAll() {
         return heraJobHistoryMapper.getAll();
     }
@@ -62,7 +66,7 @@ public class HeraJobHistoryServiceImpl implements HeraJobHistoryService {
     }
 
     @Override
-    public HeraJobHistory findByActionId(String actionId) {
+    public List<HeraJobHistory> findByActionId(String actionId) {
         return heraJobHistoryMapper.findByActionId(actionId);
     }
 
@@ -82,19 +86,29 @@ public class HeraJobHistoryServiceImpl implements HeraJobHistoryService {
     }
 
     @Override
-    public Map<String, Object> findLogByPage(PageHelper pageHelper) {
+    public Map<String, Object> findLogByPage(PageHelperTimeRange pageHelperTimeRange) {
         Map<String, Object> res = new HashMap<>(2);
-        Integer size = heraJobHistoryMapper.selectCountById(pageHelper.getJobId());
-        List<HeraJobHistory> histories = heraJobHistoryMapper.selectByPage(pageHelper);
-        List<JobLogHistory> jobLogHistories = new ArrayList<>();
-        for (HeraJobHistory history : histories) {
-            JobLogHistory logHistory = new JobLogHistory();
-            BeanUtils.copyProperties(history, logHistory);
-            logHistory.setStartTime(ActionUtil.getDefaultFormatterDate(history.getStartTime()));
-            logHistory.setEndTime(ActionUtil.getDefaultFormatterDate(history.getEndTime()));
-            jobLogHistories.add(logHistory);
+        Integer size = null;
+        List<JobLogHistoryVo> histories = null ;
+        
+        if(pageHelperTimeRange.getJobType().equals("job")){
+        	size = heraJobHistoryMapper.selectCountByPageJob(pageHelperTimeRange);
+        	histories=heraJobHistoryMapper.selectByPageJob(  pageHelperTimeRange);
+        }else{
+        	size = heraJobHistoryMapper.selectCountByPageGroup(pageHelperTimeRange);
+        	histories=heraJobHistoryMapper.selectByPageGroup( pageHelperTimeRange);
         }
-        res.put("rows", jobLogHistories);
+        
+//        List<JobLogHistory> jobLogHistories = new ArrayList<>();
+//        for (HeraJobHistoryVo history : histories) {
+//            JobLogHistory logHistory = new JobLogHistory();
+//            BeanUtils.copyProperties(history, logHistory);
+//            logHistory.setStartTime(ActionUtil.getDefaultFormatterDate(history.getStartTime()));
+//            logHistory.setEndTime(ActionUtil.getDefaultFormatterDate(history.getEndTime()));
+//            jobLogHistories.add(logHistory);
+//        }
+//        res.put("rows", jobLogHistories);
+        res.put("rows", histories);
         res.put("total", size);
         return res;
     }
@@ -103,4 +117,16 @@ public class HeraJobHistoryServiceImpl implements HeraJobHistoryService {
     public List<HeraJobHistory> findTodayJobHistory() {
         return heraJobHistoryMapper.findTodayJobHistory();
     }
+
+    @Override
+    public void deleteHistoryRecord(Integer beforeDay) {
+        heraJobHistoryMapper.deleteHistoryRecord(beforeDay);
+    }
+
+    @Override
+    public HeraJobHistory findNewest(String jobId) {
+        return heraJobHistoryMapper.findNewest(jobId);
+    }
+
+
 }

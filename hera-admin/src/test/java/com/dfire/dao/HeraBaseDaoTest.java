@@ -143,22 +143,7 @@ public class HeraBaseDaoTest {
     }
 
 
-    @Test
-    public void heraPermissionDaoTest() {
-        int id = heraPermissionService.insert(heraPermission);
-        System.out.println(id);
-        System.out.println(System.currentTimeMillis());
-        heraPermission.setGmtModified(new Date());
-        heraPermissionService.update(heraPermission);
 
-        List<Integer> list = Arrays.asList(new Integer[]{new Integer(20), new Integer(12)});
-        List<HeraPermission> permissions = heraPermissionService.findByIds(list);
-        System.out.println(permissions.get(0).getGmtCreate());
-
-        heraPermission.setId(19);
-        heraPermissionService.delete("250");
-        heraPermissionService.findById(heraPermission);
-    }
 
     @Test
     public void heraDebugHistoryDaoTest() {
@@ -298,7 +283,7 @@ public class HeraBaseDaoTest {
                     Map<Long, HeraAction> actionMap = new HashMap<>();
 
                     List<HeraJob> heraJobList = heraJobService.getAll();
-                    String  cronDate = ActionUtil.getActionVersionByTime(now);
+                    String  cronDate = ActionUtil.getActionVersionPrefix(now);
 
                 }
             }

@@ -9,7 +9,6 @@ import org.quartz.impl.StdSchedulerFactory;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.Properties;
 
 /**
@@ -25,19 +24,17 @@ public class QuartzSchedulerService {
 
     /**
      * 设置quartz配置: @Constructor 先于  @PostConstruct执行
-     *
-     * @throws IOException 2018年1月15日下午2:39:05
      */
     @Constructor
-    public Properties setQuartzProperties() throws IOException {
+    public Properties setQuartzProperties() {
         HeraLog.info("start init quartz properties");
         Properties prop = new Properties();
-        prop.put("org.quartz.scheduler.instanceName", "heraQuartzScheduler");
+        prop.put("org.quartz.scheduler.instanceName", "heraQuartzSchedulerPool");
         prop.put("org.quartz.scheduler.rmi.export", "false");
         prop.put("org.quartz.scheduler.rmi.proxy", "false");
         prop.put("org.quartz.scheduler.wrapJobExecutionInUserTransaction", "false");
         prop.put("org.quartz.threadPool.class", "org.quartz.simpl.SimpleThreadPool");
-        prop.put("org.quartz.threadPool.threadCount", "40");
+        prop.put("org.quartz.threadPool.threadCount", String.valueOf(Constants.AVAILABLE_CORES));
         prop.put("org.quartz.threadPool.threadPriority", "5");
         prop.put("org.quartz.threadPool.threadsInheritContextClassLoaderOfInitializingThread", "true");
         prop.put("org.quartz.jobStore.misfireThreshold", "60000");
@@ -52,9 +49,8 @@ public class QuartzSchedulerService {
             scheduler = schedulerFactory.getScheduler();
             scheduler.start();
             HeraLog.info("start init quartz scheduler");
-        } catch (SchedulerException | IOException e) {
-            e.printStackTrace();
-            ErrorLog.error("failed init quartz scheduler");
+        } catch (SchedulerException e) {
+            ErrorLog.error("failed init quartz scheduler", e);
         }
     }
 
@@ -65,8 +61,7 @@ public class QuartzSchedulerService {
                 scheduler.shutdown();
                 HeraLog.info("worker shutdown quartz service");
             } catch (SchedulerException e) {
-                e.printStackTrace();
-                ErrorLog.error("failed shutdown quartz scheduler");
+                ErrorLog.error("failed shutdown quartz scheduler", e);
             }
         }
     }
@@ -84,7 +79,7 @@ public class QuartzSchedulerService {
                 HeraLog.warn("remove action {} from quartz", actionId);
             }
         } catch (SchedulerException e) {
-            ErrorLog.error("remove quartz schedule error : " + actionId);
+            ErrorLog.error("remove quartz schedule error : " + actionId, e);
         }
 
     }

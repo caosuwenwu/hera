@@ -50,8 +50,12 @@ public class HeraJobHistoryVo {
     private int hostGroupId;
 
     private Map<String, String> properties;
+    
+    private String batchId;
+    private String bizLabel;
 
-    private StatusEnum status;
+
+
 
 
 }

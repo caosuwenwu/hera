@@ -1,6 +1,7 @@
 package com.dfire.common.util;
 
 import com.dfire.common.constants.TimeFormatConstant;
+import com.dfire.logs.ErrorLog;
 import org.joda.time.DateTime;
 
 import java.text.DateFormat;
@@ -36,8 +37,22 @@ public class HeraDateTool {
         return this;
     }
 
+    public HeraDateTool set(int field, int amount) {
+        calendar.set(field, amount);
+        return this;
+    }
+
     public long getTime() {
         return calendar.getTime().getTime() / 1000;
+    }
+
+    public long getMillis() {
+        return calendar.getTime().getTime();
+    }
+
+
+    public long getNowMillis() {
+        return System.currentTimeMillis();
     }
 
 
@@ -50,10 +65,6 @@ public class HeraDateTool {
         return format.format(calendar.getTime());
     }
 
-    public static void main(String[] args) {
-        System.out.println(new HeraDateTool(new Date()).addDay(-1).format(TimeFormatConstant.YYYYMMDD));
-
-    }
 
     /**
      * @param dateStr   需要转换的字符串
@@ -65,13 +76,13 @@ public class HeraDateTool {
     public static String StringToDateStr(String dateStr, String formatStr, String outFormatStr) {
         DateFormat sdf = new SimpleDateFormat(formatStr);
         SimpleDateFormat outDateFormat = new SimpleDateFormat(outFormatStr);
-        Date date = null;
+        Date date;
         String outDateStr = "";
         try {
             date = sdf.parse(dateStr);
             outDateStr = outDateFormat.format(date);
         } catch (ParseException e) {
-            e.printStackTrace();
+            ErrorLog.error("解析日期异常", e);
         }
         return outDateStr;
     }
@@ -89,7 +100,7 @@ public class HeraDateTool {
         try {
             date = sdf.parse(dateStr);
         } catch (ParseException e) {
-            e.printStackTrace();
+            ErrorLog.error("转换日期格式异常", e);
         }
         return date;
     }

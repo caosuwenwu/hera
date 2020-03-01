@@ -52,7 +52,7 @@ public class HeraAction {
 
     private String name;
 
-    private int offset;
+    private Integer offset;
 
     private String owner;
 
@@ -83,5 +83,14 @@ public class HeraAction {
     private String timezone;
 
     private int hostGroupId;
+
+    //private String cronPeriod;
+
+    //private int cronInterval;
+
+    private String batchId;
+    
+    //private String bizLabel;
+
 
 }

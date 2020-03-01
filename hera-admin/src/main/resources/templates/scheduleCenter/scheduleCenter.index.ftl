@@ -2,36 +2,36 @@
 <html xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
 <head>
     <title>任务调度中心</title>
-  	<#import "/common/common.macro.ftl" as netCommon>
-	<@netCommon.commonStyle />
-    <link href="${request.contextPath}/plugins/ztree/metroStyle/metroStyle.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.0/codemirror.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.0/addon/hint/show-hint.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.0/theme/eclipse.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.0/theme/lucario.min.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/3024-day.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/3024-night.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/ambiance.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/base16-dark.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/base16-light.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/bespin.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/blackboard.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/colorforth.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/dracula.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/duotone-dark.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/duotone-light.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/erlang-dark.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/gruvbox-dark.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/mbo.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/material.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/solarized.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.0/theme/base16-light.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap-fileinput/4.3.5/css/fileinput.min.css">
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.3/css/bootstrap-select.min.css">
-    <link href="https://cdn.bootcss.com/bootstrap-table/1.11.1/bootstrap-table.min.css" rel="stylesheet">
-
-    <link rel="stylesheet" href="${request.contextPath}/css/scheduleCenter.css">
+    <#import "/common/common.macro.ftl" as netCommon>
+    <@netCommon.commonStyle />
+    <link href="${request.contextPath}/static/plugins/ztree/css/metroStyle/metroStyle.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/lib/codemirror.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/addon/hint/show-hint.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/eclipse.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/lucario.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/3024-day.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/3024-night.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/ambiance.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/base16-dark.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/base16-light.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/bespin.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/blackboard.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/colorforth.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/dracula.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/duotone-dark.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/duotone-light.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/erlang-dark.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/addon/hint/merge.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/gruvbox-dark.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/mbo.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/material.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/solarized.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/base16-light.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/adminlte/plugins/bootstrap-fileinput/fileinput.min.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/adminlte/plugins/bootstrap-table/bootstrap-table.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="${request.contextPath}/static/plugins/bootstrap-select/bootstrap-select.min.css">
+    <link rel="stylesheet" href="${request.contextPath}/static/css/scheduleCenter.css">
+    <link href="${request.contextPath}/static/adminlte/bootstrap/css/bootstrap-datetimepicker.min.css" rel="stylesheet" />
 
 </head>
 
@@ -39,9 +39,9 @@
 <body class="hold-transition skin-black sidebar-mini">
 <div class="wrapper">
     <!-- header -->
-	<@netCommon.commonHeader />
+    <@netCommon.commonHeader />
     <!-- left -->
-	<@netCommon.commonLeft "developCenter" />
+    <@netCommon.commonLeft "developCenter" />
 
     <div class="content-wrapper">
 
@@ -61,7 +61,7 @@
                             </ul>
                             <div class="box-tools">
                                 <button type="button" class="btn btn-box-tool" id="hideTreeBtn"><i
-                                        class="fa fa-minus"></i>
+                                            class="fa fa-minus"></i>
                                 </button>
                             </div>
                         </div>
@@ -113,24 +113,24 @@
                                             </div>
                                             <label class="control-label input-sm col-sm-1">所有人:</label>
                                             <div class="col-sm-3">
-                                            <#--<label class="form-control-static" name="owner">类型</label>-->
+                                                <#--<label class="form-control-static" name="owner">类型</label>-->
                                                 <input class="form-control" type="text" name="owner" readonly>
                                             </div>
                                         </div>
                                         <div class="form-group">
                                             <label class="control-label input-sm col-sm-1">描述:</label>
                                             <div class="col-sm-3">
-                                            <#--<label class="form-control-static" name="description">导数据</label>-->
+                                                <#--<label class="form-control-static" name="description">导数据</label>-->
                                                 <input class="form-control" type="text" name="description" readonly>
                                             </div>
                                             <label class="control-label input-sm col-sm-1">关注人员:</label>
                                             <div class="col-sm-3">
-                                            <#--<label class="form-control-static" name="focusUser"></label>-->
+                                                <#--<label class="form-control-static" name="focusUser"></label>-->
                                                 <input class="form-control" type="text" name="focusUser" readonly>
                                             </div>
                                             <label class="control-label input-sm col-sm-1">管理员:</label>
                                             <div class="col-sm-3">
-                                            <#--<label class="form-control-static" name="uidS"></label>-->
+                                                <#--<label class="form-control-static" name="uidS"></label>-->
                                                 <input class="form-control" type="text" name="uidS" readonly>
                                             </div>
                                         </div>
@@ -143,23 +143,19 @@
 
                         </div>
 
-                        <div id="jobMessage" class="box-body text-center" style="display: none">
-                            <label class="info-title">基本信息</label>
+                        <div id="jobMessage" class="box-body" style="display: none">
+                            <!-- <label class="info-title">作业信息</label> -->
 
                             <form class="form-group-sm form-horizontal">
-
+                            
+                                <label class="info-title">基本信息</label>
                                 <div class="row">
+                                    <!-- 第1列 -->
                                     <div class="col-lg-4 col-md-4 col-sm-4">
                                         <div class="form-group">
                                             <label class="control-label input-sm col-sm-3">任务id:</label>
                                             <div class="col-sm-8">
                                                 <input class="form-control" type="text" name="id" readonly>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="control-label input-sm col-sm-3">名称:</label>
-                                            <div class="col-sm-8">
-                                                <input class="form-control" type="text" name="name" readonly>
                                             </div>
                                         </div>
                                         <div class="form-group">
@@ -169,100 +165,48 @@
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <label class="control-label input-sm col-sm-3"> 自动调度:</label>
+                                            <label class="control-label input-sm col-sm-3">所有者:</label>
                                             <div class="col-sm-8">
-                                                <input class="form-control" type="text" name="auto" readonly>
+                                                <input class="form-control" type="text" name="owner" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- 第2列 -->
+                                    <div class="col-lg-4 col-md-4 col-sm-4">
+                                        <div class="form-group">
+                                            <label class="control-label input-sm col-sm-3">名称:</label>
+                                            <div class="col-sm-8">
+                                                <input class="form-control" type="text" name="name" readonly>
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <label class="control-label input-sm col-sm-3">任务优先级:</label>
+                                            <label class="control-label input-sm col-sm-3">优先级:</label>
                                             <div class="col-sm-8">
                                                 <input class="form-control" type="text" name="runPriorityLevel"
                                                        readonly>
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <label class="control-label input-sm col-sm-3"><label class="tip">*</label>描述:</label>
-                                            <div class="col-sm-8">
-                                                <input class="form-control" type="text" name="description" readonly>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-4 col-md-4 col-sm-4">
-                                        <div class="form-group">
-                                            <label class="control-label input-sm col-sm-3">调度类型:</label>
-                                            <div class="col-sm-8">
-                                                <input class="form-control" type="text" name="scheduleType" readonly>
-                                            </div>
-                                        </div>
-                                        <div class="form-group" id="dependencies">
-                                            <label class="control-label input-sm col-sm-3">依赖任务:</label>
-                                            <div class="col-sm-8">
-                                                <input class="form-control" type="text" name="dependencies" readonly>
-                                            </div>
-                                        </div>
-                                        <div class="form-group" id="heraDependencyCycle">
-                                            <label class="control-label input-sm col-sm-3">依赖周期:</label>
-                                            <div class="col-sm-8">
-                                                <input class="form-control" type="text" name="heraDependencyCycle"
-                                                       readonly>
-                                            </div>
-                                        </div>
-                                        <div class="form-group" id="cronExpression">
-                                            <label class="control-label input-sm col-sm-3">定时表达式:</label>
-                                            <div class="col-sm-8">
-                                                <input class="form-control" type="text" name="cronExpression" readonly>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="control-label input-sm col-sm-3">重试次数:</label>
-                                            <div class="col-sm-8">
-                                                <input class="form-control" type="text" name="rollBackTimes" readonly>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="control-label input-sm col-sm-3">重试间隔:</label>
-                                            <div class="col-sm-8">
-                                                <input class="form-control" type="text" name="rollBackWaitTime"
-                                                       readonly>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="control-label input-sm col-sm-3">预计时长:</label>
-                                            <div class="col-sm-8">
-                                                <input class="form-control" type="text" name="" readonly>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-4 col-md-4 col-sm-4">
-                                        <div class="form-group">
-                                            <label class="control-label input-sm col-sm-3">所有人:</label>
-                                            <div class="col-sm-8">
-                                                <input class="form-control" type="text" name="owner" readonly>
-                                            </div>
-                                        </div>
-                                        <div class="form-group ">
-                                            <label class="control-label input-sm col-sm-3">重要联系人:</label>
-                                            <div class="col-sm-8">
-                                                <input class="form-control" type="text" name="" readonly>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="control-label input-sm col-sm-3">关注人员:</label>
+                                            <label class="control-label input-sm col-sm-3">关注者:</label>
                                             <div class="col-sm-8">
                                                 <input class="form-control" type="text" name="focusUser" readonly>
                                             </div>
                                         </div>
-                                        <div class="form-group ">
-                                            <label class="control-label input-sm col-sm-3">管理员:</label>
+                                    </div>
+
+                                    <!-- 第3列 -->
+                                    <div class="col-lg-4 col-md-4 col-sm-4">
+                                        <div class="form-group">
+                                            <label class="control-label input-sm col-sm-3">描述:</label>
                                             <div class="col-sm-8">
-                                                <input class="form-control" type="text" name="uidS" readonly>
+                                                <input class="form-control" type="text" name="description" readonly>
                                             </div>
                                         </div>
-                                        <div class="form-group ">
-                                            <label class="control-label input-sm col-sm-3">机器组:</label>
+                                        <div class="form-group">
+                                            <label class="control-label input-sm col-sm-3">标签:</label>
                                             <div class="col-sm-8">
-                                                <input class="form-control" type="text" name="hostGroupName" readonly>
+                                                <input class="form-control" type="text" name="bizLabel"
+                                                       readonly>
                                             </div>
                                         </div>
                                         <div class="form-group ">
@@ -273,6 +217,110 @@
                                         </div>
                                     </div>
                                 </div>
+
+
+                                <label class="info-title" >调度信息</label>
+                                <div class="row">
+                                    <!-- 第1列 -->
+                                    <div class="col-lg-4 col-md-4 col-sm-4">
+
+                                        <div class="form-group">
+                                            <label class="control-label input-sm col-sm-3">自动调度:</label>
+                                            <div class="col-sm-8">
+                                                <input class="form-control" type="text" name="auto" readonly>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="control-label input-sm col-sm-3">重试次数:</label>
+                                            <div class="col-sm-8">
+                                                <input class="form-control" type="text" name="rollBackTimes" readonly>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="control-label input-sm col-sm-3">调度周期:</label>
+                                            <div class="col-sm-8">
+                                                <input class="form-control" type="text" name="cronPeriod" readonly>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group ">
+                                            <label class="control-label input-sm col-sm-3">机器组:</label>
+                                            <div class="col-sm-8">
+                                                <input class="form-control" type="text" name="hostGroupName" readonly>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4">
+                                        <!-- 第2列 -->
+                                        <div class="form-group">
+                                            <label class="control-label input-sm col-sm-3">调度类型:</label>
+                                            <div class="col-sm-8">
+                                                <input class="form-control" type="text" name="scheduleType" readonly>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="control-label input-sm col-sm-3">重试间隔(分):</label>
+                                            <div class="col-sm-8">
+                                                <input class="form-control" type="text" name="rollBackWaitTime"
+                                                       readonly>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="control-label input-sm col-sm-3">参数基准间隔:</label>
+                                            <div class="col-sm-8">
+                                                <input class="form-control" type="text" name="cronInterval"
+                                                       readonly>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="control-label input-sm col-sm-3">预计时长:</label>
+                                            <div class="col-sm-8">
+                                                <input class="form-control" type="text" name="mustEndMinute" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-4 col-sm-4">
+                                        <!-- 第3列 -->
+                                        <div class="form-group" id="cronExpression">
+                                            <label class="control-label input-sm col-sm-3">定时表达式:</label>
+                                            <div class="col-sm-8">
+                                                <input class="form-control" type="text" name="cronExpression" readonly>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group" id="dependencies">
+                                            <label class="control-label input-sm col-sm-3">依赖任务:</label>
+                                            <div class="col-sm-8">
+                                                <input class="form-control" type="text" name="dependencies" readonly>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="control-label input-sm col-sm-3">可重复执行:</label>
+                                            <div class="col-sm-8">
+                                                <input class="form-control" type="text" name="repeatRun" readonly>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="control-label input-sm col-sm-3">报警级别</label>
+                                            <div class="col-sm-8">
+                                                <input class="form-control" type="text" name="alarmLevel" readonly>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+
                             </form>
 
                         </div>
@@ -301,10 +349,18 @@
 
                             </form>
                         </div>
+
+
+
+
+
                         <div id="jobMessageEdit" class="box-body" style="display: none;">
                             <form class="form-horizontal form-group-sm" role="form" id="jobMsgEditForm">
 
+                                <label class="info-title">基本信息</label>
+                                
                                 <div class="row">
+                                    <!-- 第1列 -->
                                     <div class="col-sm-6 col-md-6 col-lg-6">
 
                                         <div class="form-group">
@@ -314,6 +370,97 @@
 
                                             </div>
                                         </div>
+
+                                        <div class="form-group">
+                                            <label class="control-label col-sm-4 col-lg-4 col-md-4">任务类型:</label>
+                                            <div class="col-sm-8 col-lg-8 col-md-8 ">
+                                                <select class="form-control" name="runType">
+                                                    <option value="Shell" selected="selected">Shell</option>
+                                                    <option value="Hive">Hive</option>
+                                                    <option value="Spark">Spark</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="control-label col-sm-4 col-lg-4 col-md-4">标签:</label>
+                                            <div class="col-sm-8 col-lg-8 col-md-8 ">
+                                                <input class="form-control" type="text" name="bizLabel">
+
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <!-- 第2列 -->
+                                    <div class="col-sm-6 col-md-6 col-lg-6">
+
+                                        <div class="form-group">
+                                            <label class="control-label col-sm-4 col-lg-4 col-md-4"><label class="tip">*</label>描述:</label>
+                                            <div class="col-sm-8 col-lg-8 col-md-8 ">
+                                                <input class="form-control" type="text" name="description">
+
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="control-label col-sm-4 col-lg-4 col-md-4">优先级:</label>
+                                            <div class="col-sm-8 col-lg-8 col-md-8 ">
+                                                <select class="form-control" name="runPriorityLevel">
+                                                    <option value="3">high</option>
+                                                    <option value="2">medium</option>
+                                                    <option value="1" selected="selected">low</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="control-label col-sm-4 col-lg-4 col-md-4">区域:</label>
+                                            <div class="col-sm-8 col-lg-8 col-md-8 ">
+                                                <select name="areaId" class="selectpicker form-control"
+                                                        data-live-search="true" multiple data-done-button="true">
+
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+
+
+
+                                <label class="info-title" >调度信息</label>
+                                
+                                <div class="row">
+                                    <!-- 第1列 -->
+                                    <div class="col-sm-6 col-md-6 col-lg-6">
+
+                                        <div class="form-group">
+                                            <label class="control-label col-sm-4 col-lg-4 col-md-4">调度类型:</label>
+                                            <div class="col-sm-8 col-lg-8 col-md-8 ">
+                                                <select class="form-control" name="scheduleType">
+                                                    <option value="0">定时调度</option>
+                                                    <option value="1">依赖调度</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="control-label col-sm-4 col-lg-4 col-md-4">调度周期:</label>
+                                            <div class="col-sm-8 col-lg-8 col-md-8 ">
+                                                <select class="form-control" name="cronPeriod">
+                                                    <option value="year">年</option>
+                                                    <option value="month">月</option>
+                                                    <option value="day" selected="selected">天</option>
+                                                    <option value="hour">小时</option>
+                                                    <option value="minute">分</option>
+                                                    <option value="second">秒</option>
+                                                    <option value="other">其他</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
                                         <div class="form-group">
                                             <label class="control-label col-sm-4 col-lg-4 col-md-4">重试次数:</label>
                                             <div class="col-sm-8 col-lg-8 col-md-8 ">
@@ -327,65 +474,41 @@
 
                                             </div>
                                         </div>
-                                        <div class="form-group">
-                                            <label class="control-label col-sm-4 col-lg-4 col-md-4">重试间隔(分):</label>
-                                            <div class="col-sm-8 col-lg-8 col-md-8 ">
-                                                <select class="form-control" name="rollBackWaitTime">
-                                                    <option value="1" selected="selected">1</option>
-                                                    <option value="10">10</option>
-                                                    <option value="30">30</option>
-                                                    <option value="60">60</option>
-                                                    <option value="120">120</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="control-label col-sm-4 col-lg-4 col-md-4">任务类型:</label>
-                                            <div class="col-sm-8 col-lg-8 col-md-8 ">
-                                                <select class="form-control" name="runType">
-                                                    <option value="Shell" selected="selected">Shell</option>
-                                                    <option value="Hive">Hive</option>
-                                                    <option value="Spark">Spark</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="control-label col-sm-4 col-lg-4 col-md-4">任务优先级:</label>
-                                            <div class="col-sm-8 col-lg-8 col-md-8 ">
-                                                <select class="form-control" name="runPriorityLevel">
-                                                    <option value="3">high</option>
-                                                    <option value="2">medium</option>
-                                                    <option value="1" selected="selected">low</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="control-label col-sm-4 col-lg-4 col-md-4">描述:</label>
-                                            <div class="col-sm-8 col-lg-8 col-md-8 ">
-                                                <input class="form-control" type="text" name="description">
 
+                                        <div class="form-group">
+                                            <label class="control-label col-sm-4 col-lg-4 col-md-4">可重复执行:</label>
+                                            <div class="col-sm-8 col-lg-8 col-md-8 ">
+                                                <select name="repeatRun" class="form-control">
+                                                    <option value="1" selected>是</option>
+                                                    <option value="0">否</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="control-label col-sm-4 col-lg-4 col-md-4">报警级别:</label>
+                                            <div class="col-sm-8 col-lg-8 col-md-8 ">
+                                                <select class="form-control" name="offset">
+                                                    <option value="2">电话</option>
+                                                    <option value="1">微信</option>
+                                                    <option value="0" selected="selected">邮件</option>
+                                                </select>
                                             </div>
                                         </div>
                                     </div>
+
+
+                                    <!-- 第2列 -->
                                     <div class="col-sm-6 col-md-6 col-lg-6">
 
-                                        <div class="form-group">
-                                            <label class="control-label col-sm-4 col-lg-4 col-md-4">调度类型:</label>
-                                            <div class="col-sm-8 col-lg-8 col-md-8 ">
-                                                <select class="form-control" name="scheduleType">
-                                                    <option value="0">定时调度</option>
-                                                    <option value="1">依赖调度</option>
-                                                </select>
-                                            </div>
-                                        </div>
                                         <div class="form-group">
                                             <label class="control-label col-sm-4 col-lg-4 col-md-4">定时表达式:</label>
                                             <div class="col-sm-8 col-lg-8 col-md-8 ">
                                                 <input class="form-control" type="text" name="cronExpression"
                                                        id="timeChange">
-
                                             </div>
                                         </div>
+
                                         <div class="form-group">
                                             <label class="control-label col-sm-4 col-lg-4 col-md-4">依赖任务:</label>
                                             <div class="col-sm-8 col-lg-8 col-md-8 ">
@@ -394,13 +517,28 @@
 
                                             </div>
                                         </div>
-                                        <div class="form-group">
-                                            <label class="control-label col-sm-4 col-lg-4 col-md-4">依赖周期:</label>
-                                            <div class="col-sm-8 col-lg-8 col-md-8 ">
-                                                <input class="form-control" type="text" name="heraDependencyCycle">
 
+                                        <div class="form-group">
+                                            <label class="control-label col-sm-4 col-lg-4 col-md-4">参数基准间隔:</label>
+                                            <div class="col-sm-8 col-lg-8 col-md-8 ">
+                                                <input class="form-control" type="text" name="cronInterval">
                                             </div>
                                         </div>
+
+                                        <div class="form-group">
+                                            <label class="control-label col-sm-4 col-lg-4 col-md-4">重试间隔(分):</label>
+                                            <div class="col-sm-8 col-lg-8 col-md-8 ">
+                                                <select class="form-control" name="rollBackWaitTime">
+                                                    <option value="1" selected="selected">1</option>
+                                                    <option value="5">5</option>
+                                                    <option value="10">10</option>
+                                                    <option value="30">30</option>
+                                                    <option value="60">60</option>
+                                                    <option value="120">120</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
                                         <div class="form-group">
                                             <label class="control-label col-sm-4 col-lg-4 col-md-4">机器组:</label>
                                             <div class="col-sm-8 col-lg-8 col-md-8 ">
@@ -413,26 +551,14 @@
                                         <div class="form-group">
                                             <label class="control-label col-sm-4 col-lg-4 col-md-4">预计时长(分):</label>
                                             <div class="col-sm-8 col-lg-8 col-md-8 ">
-                                                <input class="form-control" type="text" name="jobName">
+                                                <input class="form-control" type="text" name="mustEndMinute">
 
                                             </div>
                                         </div>
-                                        <div class="form-group">
-                                            <label class="control-label col-sm-4 col-lg-4 col-md-4">区域:</label>
-                                            <div class="col-sm-8 col-lg-8 col-md-8 ">
-                                                <select name="areaId" class="selectpicker form-control"
-                                                        data-live-search="true" multiple data-done-button="true">
 
-                                                </select>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
-
-
                             </form>
-
-
                         </div>
 
                     </div>
@@ -544,10 +670,10 @@
                                         </button>
 
                                     </li>
-                                <#--     <br>
-                                     <li>
-                                         <button class="btn  btn-xs btn-primary btn-block" type="button">关注组下任务</button>
-                                     </li>-->
+                                    <#--     <br>
+                                         <li>
+                                             <button class="btn  btn-xs btn-primary btn-block" type="button">关注组下任务</button>
+                                         </li>-->
                                 </ul>
                             </div>
                         </div>
@@ -563,7 +689,12 @@
                                     </button>
                                 </li>
                                 <br>
-
+                                <li>
+                                    <button class="btn btn-xs btn-primary btn-block" type="button" name="record">
+                                        操作记录
+                                    </button>
+                                </li>
+                                <br>
                                 <li>
                                     <button class="btn btn-xs btn-primary btn-block" type="button" name="version">版本生成
                                     </button>
@@ -607,6 +738,13 @@
                                 <br>
                                 <li>
                                     <button class="btn  btn-xs btn-primary btn-block" type="button" name="delete">删除
+                                    </button>
+
+                                </li>
+								<br>
+                                <li>
+                                    <button class="btn  btn-xs btn-primary btn-block" type="button" name="copyJob">
+                                        复制任务
                                     </button>
 
                                 </li>
@@ -732,7 +870,7 @@
                                         <option value="shell" selected>shell脚本</option>
                                         <option value="hive">hive脚本</option>
                                         <option value="spark">spark脚本</option>
-                                    <#--没有权限控制，暂时就不开放了<option value="spark2">spark2脚本</option>-->
+                                        <#--没有权限控制，暂时就不开放了<option value="spark2">spark2脚本</option>-->
                                     </select>
                                 </div>
                             </div>
@@ -809,6 +947,25 @@
     </div>
 </div>
 
+
+
+<div class="modal fade" id="recordModal" tabindex="-1" role="dialog" aria-labelledby="recordModal" aria-hidden="true">
+    <div class="modal-dialog" style="width: 90%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">操作记录</h4>
+            </div>
+
+            <div class="modal-body">
+                <table class="table " id="recordTable"></table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
+                <button type="button" class="btn btn-info add-btn" name="refreshLog">刷新</button>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="modal" id="uploadFile" tabindex="-1" role="dialog" aria-labelledby="title">
     <div class="modal-dialog" style="width: 600px">
         <div class="modal-content">
@@ -965,32 +1122,88 @@
 </div>
 
 
+
+
+<div class="modal fade" id="copyJobModal" tabindex="-1" role="dialog" aria-labelledby="copyJobConfig"
+     aria-hidden="true">
+    <div class="modal-dialog" style="height:100px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="title">是否复制一个新的任务!</h4>
+            </div>
+            <div class="modal-body">
+                <div class="input-group form-inline">
+                    <label class="control-label form-inline" for="jobVersion">新任务名称=原名_copy,状态=失效</label>
+                </div>
+                <br>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-info add-btn">执行</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <@netCommon.commonScript />
 
-<script src="${request.contextPath}/plugins/ztree/jquery.ztree.core.js"></script>
+<script src="${request.contextPath}/static/plugins/ztree/js/jquery.ztree.core.min.js"></script>
+<script src="${request.contextPath}/static/plugins/ztree/js/jquery.ztree.exedit.min.js"></script>
+<script src="${request.contextPath}/static/plugins/ztree/js/jquery.ztree.excheck.min.js"></script>
+<script src="${request.contextPath}/static/plugins/ztree/js/jquery.ztree.exhide.min.js"></script>
+<script src="${request.contextPath}/static/plugins/codemirror/lib/codemirror.js"></script>
+<script src="${request.contextPath}/static/plugins/codemirror/mode/shell/shell.js"></script>
+<script src="${request.contextPath}/static/plugins/codemirror/addon/hint/anyword-hint.js"></script>
+<script src="${request.contextPath}/static/plugins/codemirror/addon/hint/show-hint.js"></script>
+<script src="${request.contextPath}/static/plugins/codemirror/addon/hint/sql-hint.js"></script>
+<script src="${request.contextPath}/static/plugins/codemirror/addon/hint/active-line.js"></script>
+<script src="${request.contextPath}/static/plugins/codemirror/mode/python/python.js"></script>
+<script src="${request.contextPath}/static/plugins/codemirror/mode/sql/sql.js"></script>
+<script src="${request.contextPath}/static/adminlte/plugins/bootstrap-fileinput/fileinput.min.js"></script>
+<script src="${request.contextPath}/static/adminlte/plugins/bootstrap-fileinput/zh.min.js"></script>
 
-<script src="https://cdn.bootcss.com/zTree.v3/3.5.33/js/jquery.ztree.exedit.min.js"></script>
-<script src="https://cdn.bootcss.com/zTree.v3/3.5.33/js/jquery.ztree.excheck.min.js"></script>
-<script src="https://cdn.bootcss.com/zTree.v3/3.5.33/js/jquery.ztree.exhide.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.0/codemirror.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.0/mode/shell/shell.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.0/addon/hint/anyword-hint.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.0/addon/hint/show-hint.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.0/addon/hint/sql-hint.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.0/addon/selection/active-line.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.0/mode/python/python.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.0/mode/sql/sql.min.js"></script>
-<script src="https://cdn.bootcss.com/bootstrap-fileinput/4.3.5/js/fileinput.min.js"></script>
-<script src="https://cdn.bootcss.com/bootstrap-fileinput/4.3.5/js/locales/zh.min.js"></script>
-<script src="https://cdn.bootcss.com/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
-<script src="https://cdn.bootcss.com/bootstrap-table/1.11.1/locale/bootstrap-table-zh-CN.min.js"></script>
-<script src="https://cdn.bootcss.com/dagre-d3/0.4.17/dagre-d3.min.js"></script>
-<script src="${request.contextPath}/plugins/d3/d3.v3.min.js"></script>
-<script src="${request.contextPath}/plugins/bootstrap-select/bootstrap-select.min.js"></script>
-<script src="${request.contextPath}/js/taskGraph.js?v=2"></script>
-<script src="${request.contextPath}/js/scheduleCenter.js"></script>
-<script src="${request.contextPath}/js/common.js"></script>
+<script src="${request.contextPath}/static/adminlte/plugins/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="${request.contextPath}/static/adminlte/plugins/bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
+<script src="${request.contextPath}/static/plugins/d3/dagre-d3.js"></script>
+<script src="${request.contextPath}/static/plugins/d3/d3.v3.min.js"></script>
+<script src="${request.contextPath}/static/plugins/bootstrap-select/bootstrap-select.min.js"></script>
+<script src="${request.contextPath}/static/js/taskGraph.js?v=2"></script>
+<script src="${request.contextPath}/static/js/scheduleCenter.js"></script>
+<script src="${request.contextPath}/static/js/common.js"></script>
+<script src="${request.contextPath}/static/adminlte/bootstrap/js/bootstrap-datetimepicker.min.js"></script>
+<script src="${request.contextPath}/static/adminlte/bootstrap/js/bootstrap-datetimepicker.zh-CN.js"></script>
+<script src="${request.contextPath}/static/plugins/codemirror/addon/hint/merge.js"></script>
+<script src="${request.contextPath}/static/plugins/codemirror/addon/hint/diff_match_patch.js"></script>
 
+<script type="text/javascript">
+ $(".form_datetime").datetimepicker({
+ format: "yymmdd",
+ autoclose: true,
+ todayBtn: true,
+ todayHighlight: true,
+ language: 'zh-CN',//中文，需要引用zh-CN.js包
+ startView: 2,//月视图
+ minView: 2,//日期时间选择器所能够提供的最精确的时间选择视图
+ forceParse:false,
+ });
+</script>
+<script type="text/html" id="content">
+    <div id="view"></div>
+</script>
+
+<script>
+    $(document).ready(function () {
+        var time = new Date();
+        var day = ("0" + time.getDate()).slice(-2);
+        var month = ("0" + (time.getMonth() + 1)).slice(-2);
+        var today = (time.getFullYear()+'').substring(2)   + (month)   + (day);
+        $(".form_datetime").val(today);
+    })
+</script>
 
 </body>
 

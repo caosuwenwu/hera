@@ -3,9 +3,6 @@ package com.dfire.common.mapper;
 
 import com.dfire.common.entity.HeraPermission;
 import com.dfire.common.mybatis.HeraInsertLangDriver;
-import com.dfire.common.mybatis.HeraListInLangDriver;
-import com.dfire.common.mybatis.HeraSelectLangDriver;
-import com.dfire.common.mybatis.HeraUpdateLangDriver;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -22,40 +19,28 @@ public interface HeraPermissionMapper {
     @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
     int insert(HeraPermission heraPermission);
 
-    @Delete("delete from hera_permission where id = #{id}")
-    int delete(@Param("id") String id);
 
-    @Update("update hera_permission (#{heraPermission}) where id = #{id}")
-    @Lang(HeraUpdateLangDriver.class)
-    int update(HeraPermission heraPermission);
+    @Select("select * from hera_permission where target_id =#{targetId} and is_valid = #{isValid} and type = #{type}")
+    List<HeraPermission> findByTargetId(@Param("targetId") Integer targetId,
+                                        @Param("type") String type,
+                                        @Param("isValid") Integer isValid);
 
-    @Select("select * from hera_permission")
-    @Lang(HeraSelectLangDriver.class)
-    List<HeraPermission> getAll();
+    @Select("select * from hera_permission where target_id = #{id} and is_valid = 1 and uid = #{owner} and type=#{type}")
+    HeraPermission findByCond(@Param("id") Integer id,
+                              @Param("owner") String owner,
+                              @Param("type") String type);
 
-    @Select("select * from hera_permission where id = #{id}")
-    @Lang(HeraSelectLangDriver.class)
-    HeraPermission findById(HeraPermission heraPermission);
-
-    @Select("select * from hera_permission where id in (#{list})")
-    @Lang(HeraListInLangDriver.class)
-    List<HeraPermission> findByIds(@Param("list") List<Integer> list);
-
-
-    @Select("select * from hera_permission where target_id =#{targetId}")
-    List<HeraPermission> findByTargetId(Integer targetId);
-
-    @Select("select * from hera_permission where target_id = #{id} and uid = #{owner}")
-    HeraPermission findByCond(@Param("id") Integer id, @Param("owner") String owner);
-
-    @Delete("delete from hera_permission where target_id = #{id}")
-    Integer deleteByTargetId(Integer id);
+    @Delete("update hera_permission set is_valid = #{is_valid} where target_id = #{id} and type = #{type} and uid=#{uid}")
+    Integer updateByUid(@Param("id") Integer id,
+                        @Param("type") String type,
+                        @Param("is_valid") Integer isValid,
+                        @Param("uid") String uId);
 
     @Insert({"<script> " +
-            " insert into hera_permission (gmt_create,gmt_modified,target_id,type,uid) " +
+            " insert into hera_permission (gmt_modified,target_id,type,uid) " +
             "values " +
             "<foreach collection=\"list\"  separator=\",\" item=\"item\" > " +
-            " (#{item.gmtCreate},#{item.gmtModified},#{item.targetId},#{item.type},#{item.uid}) " +
+            " (#{item.gmtModified},#{item.targetId},#{item.type},#{item.uid}) " +
             " </foreach>" +
             " </script>"})
     Integer insertList(@Param("list") List<HeraPermission> permissions);

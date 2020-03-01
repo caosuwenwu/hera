@@ -15,6 +15,22 @@ function successMsg(data) {
 
 }
 
+/**
+ * 把当前选中的节点存入localStorage
+ * 页面刷新后，会根据"defaultId"设置当前选中的节点
+ * 避免页面刷新丢失
+ * @param id    节点ID
+ */
+function setCurrentId(id) {
+
+    localStorage.setItem("defaultId", id);
+}
+
+function toJobPage(id) {
+    setCurrentId(id);
+    window.open(base_url + "/scheduleCenter");
+}
+
 function success(msg) {
     $('#alertSuccess').css({
         "width": 700,
@@ -120,13 +136,18 @@ function isInArray(arr, value) {
  */
 
 function getDataByPost(url) {
-    var dataStore;
+    var dataStore = null;
     $.ajax({
         type: "post",
         url: url,
         async: false,
         success: function (data) {
-            dataStore = data;
+            if (data.success === true) {
+                dataStore = data.data;
+            } else {
+                alert(data.message);
+            }
+
         }
     });
     return dataStore;
@@ -146,7 +167,11 @@ function getDataByGet(url, parameter) {
         async: false,
         data: parameter,
         success: function (data) {
-            result = data;
+            if (data.success === true) {
+                result = data.data;
+            } else {
+                alert(data.message);
+            }
         }
     });
     return result;
@@ -171,7 +196,7 @@ function uploadFile() {
 
     $("#fileForm").fileinput({
         uploadUrl: base_url + "/uploadResource/upload.do",
-        maxFileCount: 1,
+        maxFileCount: 5,
         enctype: 'multipart/form-data',
         language: 'zh',
         allowedFileExtensions: ['py','jar','sql','hive','sh','js','txt','png','jpg','gif'],
@@ -179,13 +204,12 @@ function uploadFile() {
     }).on("fileuploaded", function (event, data) {
         var response = data.response;
         var message = response.message;
-        console.log(data)
-        var msg = "<b>" +"hadoop文件使用路径: "+ message + "</b>"
-        if (response.success == false) {
-            $("#responseResult").html(msg);
+        if (response.success === false) {
+            $("#responseResult").html('<span style="color: red; ">" + message + "</span>');
+            alert(message);
         }
-        if (response.success == true) {
-            $("#responseResult").html(msg);
+        if (response.success === true) {
+            $("#responseResult").html("<b>" +"hadoop文件使用路径: "+ message + "</b>");
         }
     }).on('filepredelete', function () {
             $("#responseResult").html("");
@@ -193,6 +217,7 @@ function uploadFile() {
 
     );
 }
+
 
 $("#logoutBtn").click(function () {
     var url = base_url;

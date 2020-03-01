@@ -1,28 +1,25 @@
 package com.dfire.core.event.listenter;
 
+import com.dfire.common.config.ServiceLoader;
 import com.dfire.common.constants.Constants;
 import com.dfire.common.entity.HeraJob;
 import com.dfire.common.entity.HeraJobMonitor;
-import com.dfire.common.entity.HeraUser;
-import com.dfire.common.service.EmailService;
+import com.dfire.common.entity.HeraSso;
+import com.dfire.common.enums.TriggerTypeEnum;
 import com.dfire.common.service.HeraJobMonitorService;
 import com.dfire.common.service.HeraJobService;
-import com.dfire.common.service.HeraUserService;
+import com.dfire.common.service.HeraSsoService;
+import com.dfire.common.service.JobFailAlarm;
 import com.dfire.common.util.ActionUtil;
-import com.dfire.common.util.NamedThreadFactory;
-import com.dfire.core.config.HeraGlobalEnvironment;
-import com.dfire.core.event.HeraJobFailedEvent;
+import com.dfire.config.HeraGlobalEnv;
 import com.dfire.core.event.base.MvcEvent;
 import com.dfire.core.netty.master.MasterContext;
+import com.dfire.event.HeraJobFailedEvent;
 import com.dfire.logs.ErrorLog;
-import com.dfire.logs.ScheduleLog;
+import com.dfire.logs.MonitorLog;
 import org.apache.commons.lang.StringUtils;
 
-import javax.mail.MessagingException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
 
 /**
  * 任务失败的预处理
@@ -31,66 +28,63 @@ import java.util.concurrent.TimeUnit;
  */
 public class HeraJobFailListener extends AbstractListener {
 
-    private HeraUserService heraUserService;
-    private HeraJobMonitorService heraJobMonitorService;
-    private HeraJobService heraJobService;
-    private EmailService emailService;
-    private Executor executor;
-    //告警接口，待开发
 
-    public HeraJobFailListener(MasterContext context) {
-        heraUserService = context.getHeraUserService();
-        heraJobMonitorService = context.getHeraJobMonitorService();
-        emailService = context.getEmailService();
-        heraJobService = context.getHeraJobService();
-        executor = new ThreadPoolExecutor(
-                1, 1, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(Integer.MAX_VALUE), new NamedThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
+    private List<JobFailAlarm> alarms;
+
+    private HeraJobMonitorService jobMonitorService;
+
+    private HeraSsoService heraSsoService;
+
+    private HeraJobService heraJobService;
+
+    public HeraJobFailListener(MasterContext masterContext) {
+        alarms = ServiceLoader.getAlarms();
+        jobMonitorService = masterContext.getHeraJobMonitorService();
+        heraSsoService = masterContext.getHeraSsoService();
+        heraJobService = masterContext.getHeraJobService();
     }
 
     @Override
     public void beforeDispatch(MvcEvent mvcEvent) {
         if (mvcEvent.getApplicationEvent() instanceof HeraJobFailedEvent) {
-            HeraJobFailedEvent failedEvent = (HeraJobFailedEvent) mvcEvent.getApplicationEvent();
-            String actionId = failedEvent.getActionId();
-            Integer jobId = ActionUtil.getJobId(actionId);
-            if (jobId == null) {
-                return;
-            }
-            HeraJob heraJob = heraJobService.findById(jobId);
-            //非开启任务不处理  最好能把这些抽取出去 提供接口实现
-            if (heraJob.getAuto() != 1 && !Constants.PUB_ENV.equals(HeraGlobalEnvironment.getEnv())) {
-                return;
-            }
-            executor.execute(() -> {
-                StringBuilder address = new StringBuilder("");
-                try {
-                    HeraJobMonitor monitor = heraJobMonitorService.findByJobId(heraJob.getId());
-                    if (monitor == null && Constants.PUB_ENV.equals(HeraGlobalEnvironment.getEnv())) {
-                        ScheduleLog.info("任务无监控人，发送给owner：{}", heraJob.getId());
-                        HeraUser user = heraUserService.findByName(heraJob.getOwner());
-                        address.append(user.getEmail().trim());
-                    } else if (monitor != null) {
-                        String ids = monitor.getUserIds();
-                        String[] id = ids.split(Constants.COMMA);
-                        for (String anId : id) {
-                            if (StringUtils.isBlank(anId)) {
-                                continue;
-                            }
-                            HeraUser user = heraUserService.findById(Integer.parseInt(anId));
-                            if (user != null && user.getEmail() != null) {
-                                address.append(user.getEmail()).append(Constants.COMMA);
-                            }
+            if (HeraGlobalEnv.getAlarmEnvSet().contains(HeraGlobalEnv.getEnv())) {
+                HeraJobFailedEvent failedEvent = (HeraJobFailedEvent) mvcEvent.getApplicationEvent();
+                if (failedEvent.getTriggerType() == TriggerTypeEnum.MANUAL || failedEvent.getTriggerType() == TriggerTypeEnum.DEBUG) {
+                    return;
+                }
+                //重跑次数未达到重试次数
+                if (failedEvent.getRunCount() <= failedEvent.getRetryCount()) {
+                    return;
+                }
+                super.getSinglePool().execute(() -> {
+                    Integer jobId = ActionUtil.getJobId(failedEvent.getActionId());
+                    if (jobId == null) {
+                        return;
+                    }
+                    HeraJob heraJob = heraJobService.findById(jobId);
+                    if (heraJob == null) {
+                        MonitorLog.warn("版本为{}的任务{}被删除", failedEvent.getActionId(), jobId);
+                        return;
+                    }
+                    failedEvent.setHeraJob(heraJob);
+                    Set<HeraSso> monitorUser = new HashSet<>();
+                    Optional.ofNullable(jobMonitorService.findByJobId(jobId))
+                            .map(HeraJobMonitor::getUserIds)
+                            .ifPresent(ids -> Arrays.stream(ids
+                                    .split(Constants.COMMA))
+                                    .filter(StringUtils::isNotBlank)
+                                    .forEach(id -> {
+                                        Optional.ofNullable(heraSsoService.findSsoById(Integer.parseInt(id))).ifPresent(monitorUser::add);
+                                    }));
+                    for (JobFailAlarm failAlarm : alarms) {
+                        try {
+                            failAlarm.alarm(failedEvent, monitorUser);
+                        } catch (Exception e) {
+                            ErrorLog.error("任务失败的通知事件异常:" + e.getMessage(), e);
                         }
                     }
-                    emailService.sendEmail("hera任务失败了(" + HeraGlobalEnvironment.getEnv() + ")", "任务Id :" + actionId, address.toString());
-
-                } catch (MessagingException e) {
-                    e.printStackTrace();
-                    ErrorLog.error("发送邮件失败");
-                }
-            });
-
-
+                });
+            }
         }
     }
 }

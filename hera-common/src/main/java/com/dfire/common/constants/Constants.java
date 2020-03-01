@@ -12,23 +12,19 @@ public class Constants {
 
     public final static String PRE_ENV = "pre";
 
-    public final static String PUB_ENV = "publish";
+    public final static String PUB_ENV = "public";
+
+    public final static String DAILY_ENV = "daily";
 
     public final static String WORK_PREFIX = "worker-";
 
     public final static String MASTER_PREFIX = "master-";
 
-
-    public final static String STATUS_FAILED = "failed";
-
-    public final static String STATUS_RUNNING = "running";
-
-    public final static String STATUS_SUCCESS = "success";
-
     public final static String STATUS_NONE = "none";
 
     public final static Integer HTML_FONT_SIZE = 1;
 
+    public final static Integer AVAILABLE_CORES = Runtime.getRuntime().availableProcessors();
 
     public final static String HTML_FONT_RED_LEFT = "<font color=\"red\" size=\"" + HTML_FONT_SIZE + "\" >";
 
@@ -58,11 +54,20 @@ public class Constants {
      */
     public final static Integer LOGIN_TIME_OUT = JWT_TIME_OUT * 60 * 60 * 24;
 
-    public final static Integer DEFAULT_EXIT_CODE = 1024;
 
-    public final static Integer LOG_EXIT_CODE = 1025;
+    /**
+     * 退出码相关
+     */
 
-    public final static Integer INTERRUPTED_EXIT_CODE = 1026;
+    public final static int SUCCESS_EXIT_CODE = 0;
+
+    public final static int DEFAULT_EXIT_CODE = -1;
+
+    public final static int WAIT_EXIT_CODE = 38;
+
+    public final static int LOG_EXIT_CODE = WAIT_EXIT_CODE + 1;
+
+    public final static int INTERRUPTED_EXIT_CODE = WAIT_EXIT_CODE + 2;
 
 
     public final static String SPARK_FILE = "spark";
@@ -76,6 +81,8 @@ public class Constants {
 
     public final static String COMMA = ",";
 
+    public final static String SEMICOLON = ";";
+
 
     public final static String SHELL_SUFFIX = POINT + "sh";
 
@@ -85,10 +92,12 @@ public class Constants {
 
     public final static String NEW_LINE = "\n";
 
+    public final static String BLANK_SPACE = " ";
+
     public final static String HTML_NEW_LINE = "<br>";
 
 
-    public final static String LOG_SPLIT = "<br><br>";
+    public final static String LOG_SPLIT = "<br>";  //原来是：<br><br>;
 
     public final static String FILE_ALL_NAME = "all";
 
@@ -101,6 +110,58 @@ public class Constants {
     public final static String CLOSE_STATUS = "关闭";
 
     public final static String INVALID_STATUS = "失效";
+
+
+    public final static String QUARTZ_ID = "actionId";
+
+    public final static String QUARTZ_DISPATCHER = "dispatcher";
+
+    /**
+     * 所有区域任务
+     */
+    public final static String ALL_AREA = "all";
+
+    public final static String SSH_PREFIX = "<< eeooff";
+
+    public final static String SSH_SUFFIX = "eeooff";
+
+    public final static String HERA_EMR_FIXED = "hera.emr.fixed";
+
+    public final static String HERA_EMR_FIXED_HOST = "hera.emr.fixed.host";
+
+    public final static String AREA_INDIA = "IND";
+
+    public final static String AREA_EUROPE = "EU";
+
+    public final static String AREA_US = "US";
+
+    public final static String AREA_UE = "UE";
+
+    public final static String AREA_CHINA = "AY";
+
+    public final static String HERA_SPARK_CONF = "hera.spark.conf";
+
+    public final static String EMR_SELECT_WORK = "emr.select.work";
+
+    public final static String TMP_PATH = "/tmp";
+
+
+    public final static String SESSION_USERNAME = "username";
+
+    public final static String SESSION_USER_ID = "userId";
+
+    public final static String SESSION_SSO_ID = "ssoId";
+
+    public final static String SESSION_SSO_NAME = "sso_name";
+
+    public final static String TOKEN_NAME = "HERA_Token";
+
+    public final static String DEFAULT_ID = "-1";
+
+    public final static String PASSWORD_WORD = "password";
+
+    public final static String HERA_SCRIPT_ECHO = "hera.script.echo";
+
 
 
 }

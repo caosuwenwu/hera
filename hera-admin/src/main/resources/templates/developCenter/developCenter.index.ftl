@@ -1,35 +1,35 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
 <head>
-    <title>任务调度中心</title>
-  	<#import "/common/common.macro.ftl" as netCommon>
-	<@netCommon.commonStyle />
-    <link href="${request.contextPath}/plugins/ztree/metroStyle/metroStyle.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.0/codemirror.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.0/addon/hint/show-hint.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.0/theme/eclipse.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.0/theme/lucario.min.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/3024-day.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/3024-night.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/ambiance.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/base16-dark.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/base16-light.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/bespin.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/blackboard.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/colorforth.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/dracula.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/duotone-dark.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/duotone-light.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/erlang-dark.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/gruvbox-dark.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/mbo.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/material.css" rel="stylesheet">
-    <link href="${request.contextPath}/plugins/codemirror/theme/solarized.css" rel="stylesheet">
-    <link rel="stylesheet" href="${request.contextPath}/adminlte/bootstrap/css/bootstrap-tab.css">
-    <link rel="stylesheet" href="${request.contextPath}/css/iconfont.css">
-    <link rel="stylesheet" href="${request.contextPath}/css/developCenter.css">
-    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap-fileinput/4.3.5/css/fileinput.min.css">
-    <link href="https://cdn.bootcss.com/bootstrap-table/1.11.1/bootstrap-table.min.css" rel="stylesheet">
+    <title>开发中心</title>
+    <#import "/common/common.macro.ftl" as netCommon>
+    <@netCommon.commonStyle />
+    <link href="${request.contextPath}/static/plugins/ztree/css/metroStyle/metroStyle.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/lib/codemirror.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/addon/hint/show-hint.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/eclipse.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/lucario.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/3024-day.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/3024-night.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/ambiance.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/base16-dark.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/base16-light.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/bespin.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/blackboard.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/colorforth.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/dracula.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/duotone-dark.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/duotone-light.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/erlang-dark.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/gruvbox-dark.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/mbo.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/material.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/plugins/codemirror/theme/solarized.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/adminlte/bootstrap/css/bootstrap-tab.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/css/iconfont.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/css/developCenter.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/adminlte/plugins/bootstrap-fileinput/fileinput.min.css" rel="stylesheet">
+    <link href="${request.contextPath}/static/adminlte/plugins/bootstrap-table/bootstrap-table.min.css" rel="stylesheet">
 
 </head>
 
@@ -72,9 +72,9 @@
 <body class="hold-transition skin-black sidebar-mini">
 <div class="wrapper" style="height: 100%;">
     <!-- header -->
-	<@netCommon.commonHeader />
+    <@netCommon.commonHeader />
     <!-- left -->
-	<@netCommon.commonLeft "developCenter" />
+    <@netCommon.commonLeft "developCenter" />
 
     <div class="content-wrapper">
         <section class="content">
@@ -103,14 +103,14 @@
                         <button id="syncingTask" type="submit" class="btn btn-primary btn-sm">同步任务</button>
                         <button id="saveScript" class="btn btn-primary btn-sm">保存脚本</button>
                     </div>
-                <#--tab框-->
+                    <#--tab框-->
                     <div class="prev-next-con" id="prevNextCon">
                         <div class="prev-tab iconfont icon-prev">&#xe62d;</div>
                         <div class="next-tab iconfont icon-next">&#xe62e;</div>
                     </div>
                     <div id="tabContainer" class="devStyle"></div>
                     <div class="code-log-con">
-                        <div id="scriptEditor" class="devStyle" >
+                        <div id="scriptEditor" class="devStyle">
                             <textarea id="fileScript" name="editor"></textarea>
                         </div>
                         <div id="logContainer" class="log-container">
@@ -202,26 +202,41 @@
         </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
+
+<script type="text/html" id="addHostGroup">
+    <form class="layui-form layui-form-pane" action="" id="addHostGroupForm">
+        <div class="layui-form-item">
+            <label class="layui-form-label">机器组</label>
+            <div class="layui-input-block">
+                <select id="hostGroupId" lay-verify="required">
+                    {{# layui.each(d, function(index,item) { }}
+                    <option value="{{item.id}}">{{item.name}}</option>
+                    {{# }); }}
+                </select>
+            </div>
+        </div>
+    </form>
+</script>
 <@netCommon.commonScript />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.0/codemirror.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.0/mode/shell/shell.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.0/addon/hint/anyword-hint.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.0/addon/hint/show-hint.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.0/addon/hint/sql-hint.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.0/addon/selection/active-line.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.0/mode/python/python.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.0/mode/sql/sql.min.js"></script>
-<script src="https://cdn.bootcss.com/zTree.v3/3.5.33/js/jquery.ztree.core.min.js"></script>
-<script src="https://cdn.bootcss.com/zTree.v3/3.5.33/js/jquery.ztree.exedit.min.js"></script>
-<script src="https://cdn.bootcss.com/zTree.v3/3.5.33/js/jquery.ztree.excheck.min.js"></script>
-<script src="https://cdn.bootcss.com/zTree.v3/3.5.33/js/jquery.ztree.exhide.min.js"></script>
-<script src="https://cdn.bootcss.com/bootstrap-fileinput/4.3.5/js/fileinput.min.js"></script>
-<script src="https://cdn.bootcss.com/bootstrap-fileinput/4.3.5/js/locales/zh.min.js"></script>
-<script src="https://cdn.bootcss.com/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
-<script src="https://cdn.bootcss.com/bootstrap-table/1.11.1/locale/bootstrap-table-zh-CN.min.js"></script>
-<script src="${request.contextPath}/adminlte/bootstrap/js/bootstrap-tab.js"></script>
-<script src="${request.contextPath}/js/common.js"></script>
-<script src="${request.contextPath}/js/developCenter.js?v=1"></script>
+<script src="${request.contextPath}/static/plugins/codemirror/lib/codemirror.js"></script>
+<script src="${request.contextPath}/static/plugins/codemirror/mode/shell/shell.js"></script>
+<script src="${request.contextPath}/static/plugins/codemirror/addon/hint/anyword-hint.js"></script>
+<script src="${request.contextPath}/static/plugins/codemirror/addon/hint/show-hint.js"></script>
+<script src="${request.contextPath}/static/plugins/codemirror/addon/hint/sql-hint.js"></script>
+<script src="${request.contextPath}/static/plugins/codemirror/addon/hint/active-line.js"></script>
+<script src="${request.contextPath}/static/plugins/codemirror/mode/python/python.js"></script>
+<script src="${request.contextPath}/static/plugins/codemirror/mode/sql/sql.js"></script>
+<script src="${request.contextPath}/static/plugins/ztree/js/jquery.ztree.core.min.js"></script>
+<script src="${request.contextPath}/static/plugins/ztree/js/jquery.ztree.exedit.min.js"></script>
+<script src="${request.contextPath}/static/plugins/ztree/js/jquery.ztree.excheck.min.js"></script>
+<script src="${request.contextPath}/static/plugins/ztree/js/jquery.ztree.exhide.min.js"></script>
+<script src="${request.contextPath}/static/adminlte/plugins/bootstrap-fileinput/fileinput.min.js"></script>
+<script src="${request.contextPath}/static/adminlte/plugins/bootstrap-fileinput/zh.min.js"></script>
+<script src="${request.contextPath}/static/adminlte/plugins/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="${request.contextPath}/static/adminlte/plugins/bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
+<script src="${request.contextPath}/static/adminlte/bootstrap/js/bootstrap-tab.js"></script>
+<script src="${request.contextPath}/static/js/common.js"></script>
+<script src="${request.contextPath}/static/js/developCenter.js?v=1"></script>
 </body>
 
 </html>

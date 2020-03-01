@@ -10,13 +10,16 @@ import com.dfire.common.entity.model.JsonResponse;
  */
 public interface JobManageService {
 
+
+    
     /**
      * 进入任务详情查询
      *
      * @param status
      * @return
      */
-    JsonResponse findJobHistoryByStatus(String status);
+    JsonResponse findJobHistoryByStatus(String status, String begindt,String enddt);
+    
 
     /**
      * 查询任务运行时长top10
@@ -35,6 +38,7 @@ public interface JobManageService {
 
     /**
      * 今日任务详情明细，初始化曲线图
+     *
      * @return
      */
 

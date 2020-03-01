@@ -1,8 +1,10 @@
 package com.dfire.core.netty.worker.request;
 
 import com.dfire.core.exception.RemotingException;
+import com.dfire.core.netty.HeraChannel;
 import com.dfire.core.netty.NettyChannel;
 import com.dfire.core.tool.OsProcessJob;
+import com.dfire.logs.ErrorLog;
 import com.dfire.protocol.RpcOperate;
 import com.dfire.protocol.RpcRequest.Request;
 import com.dfire.protocol.RpcSocketMessage.SocketMessage;
@@ -15,12 +17,12 @@ import io.netty.channel.Channel;
  */
 public class WorkHandlerRequest {
 
-    public void getWorkInfo(Channel channel) {
+    public void getWorkInfo(HeraChannel channel) {
         OsProcessJob processJob = new OsProcessJob();
         Integer exitCode = processJob.run();
         if (exitCode == 0) {
             try {
-                new NettyChannel(channel).writeAndFlush(
+                channel.writeAndFlush(
                         SocketMessage.newBuilder()
                                 .setKind(SocketMessage.Kind.REQUEST)
                                 .setBody(Request.newBuilder()
@@ -33,7 +35,7 @@ public class WorkHandlerRequest {
                                         .toByteString())
                                 .build());
             } catch (RemotingException e) {
-                e.printStackTrace();
+                ErrorLog.error("发送消息失败", e);
             }
         }
 

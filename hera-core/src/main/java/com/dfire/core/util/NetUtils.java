@@ -1,12 +1,12 @@
 package com.dfire.core.util;
 
+import com.dfire.logs.ErrorLog;
+
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.UnknownHostException;
 import java.util.Enumeration;
 
 /**
- *
  * @author xiaosuda
  * @date 2018/6/13
  */
@@ -16,13 +16,14 @@ public class NetUtils {
 
     /**
      * 获得局域网IP
+     *
      * @return
      */
     public static String getLocalAddress() {
-        String secondAddress = null;
+        String secondAddress;
         try {
             secondAddress = InetAddress.getLocalHost().getHostAddress();
-            if(!LOCAL_HOST.equals(secondAddress)){
+            if (!LOCAL_HOST.equals(secondAddress)) {
                 return secondAddress;
             }
             for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements(); ) {
@@ -33,17 +34,13 @@ public class NetUtils {
                     if (!inetAddress.isLoopbackAddress()) {
                         if (inetAddress.isSiteLocalAddress()) {
                             return inetAddress.getHostAddress();
-                        } else if (secondAddress == null) {
-                            secondAddress = inetAddress.getHostAddress();
                         }
                     }
                 }
             }
-            if (secondAddress != null) {
-                return secondAddress;
-            }
+            return secondAddress;
         } catch (Exception e) {
-            e.printStackTrace();
+            ErrorLog.error("获取机器ip失败", e);
         }
         throw new NullPointerException("----------------- Not FOUND REAL IP -------------------");
     }

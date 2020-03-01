@@ -1,5 +1,10 @@
 package com.dfire.core.job;
 
+import com.dfire.common.constants.Constants;
+import com.dfire.common.constants.RunningJobKeyConstant;
+import com.dfire.common.exception.HeraException;
+import com.dfire.config.HeraGlobalEnv;
+
 import java.util.List;
 
 /**
@@ -18,6 +23,7 @@ public class ProcessJobContainer extends AbstractJob {
 
     private Job running;
 
+
     public ProcessJobContainer(JobContext jobContext, List<Job> pres, List<Job> posts, Job core) {
         super(jobContext);
         this.pres = pres;
@@ -30,47 +36,55 @@ public class ProcessJobContainer extends AbstractJob {
      * 单个任务完整执行逻辑，按照前置，core，后置顺序执行
      *
      * @return
-     * @throws Exception
      */
     @Override
     public int run() throws Exception {
-        int preExitCode = -1;
-        for (Job job : pres) {
-            if (isCanceled()) {
-                break;
+        int exitCode = -1;
+        try {
+            if (HeraGlobalEnv.isScriptEcho() || Boolean.parseBoolean(getProperty(Constants.HERA_SCRIPT_ECHO, "false"))) {
+                String echoLog = "==================开始输出脚本内容==================\n" +
+                        Constants.NEW_LINE + getProperty(RunningJobKeyConstant.JOB_SCRIPT);
+                log(echoLog);
+                log("==================结束输出脚本内容==================");
             }
-            running = job;
-            log("开始执行前置处理单元" + job.getClass().getSimpleName());
-            preExitCode = running.run();
-            jobContext.setPreExitCode(preExitCode);
-            log("前置处理单元" + job.getClass().getSimpleName() + "处理完毕");
-            running = null;
-        }
-
-        Integer exitCode = -1;
-        jobContext.setCoreExitCode(exitCode);
-        if (!isCanceled()) {
-            log("开始执行核心job");
-            running = job;
-            exitCode = job.run();
+            getProperties().setProperty(Constants.EMR_SELECT_WORK, getLoginCmd());
+            for (Job job : pres) {
+                if (isCanceled()) {
+                    break;
+                }
+                running = job;
+                log("开始执行前置处理单元" + job.getClass().getSimpleName());
+                jobContext.setPreExitCode(running.run());
+                log("前置处理单元" + job.getClass().getSimpleName() + "处理完毕");
+                running = null;
+            }
             jobContext.setCoreExitCode(exitCode);
-        }
-        log("核心job处理完毕");
-        running = null;
-
-        int postExitCode = -1;
-        for (Job job : posts) {
-            if (isCanceled()) {
-                break;
+            if (!isCanceled()) {
+                log("开始执行核心job");
+                running = job;
+                exitCode = job.run();
+                jobContext.setCoreExitCode(exitCode);
             }
-            log("开始执行后置处理单元" + job.getClass().getSimpleName());
-            running = job;
-            postExitCode = running.run();
-            jobContext.setPreExitCode(postExitCode);
-            log("后置置处理单元" + job.getClass().getSimpleName() + "处理完毕");
+            log("核心job处理完毕");
             running = null;
+
+            for (Job job : posts) {
+                if (isCanceled()) {
+                    break;
+                }
+                log("开始执行后置处理单元" + job.getClass().getSimpleName());
+                running = job;
+                jobContext.setPreExitCode(running.run());
+                log("后置置处理单元" + job.getClass().getSimpleName() + "处理完毕");
+                running = null;
+            }
+        } catch (Exception e) {
+            log(e);
+            throw new HeraException("执行任务异常:", e);
+        } finally {
+            log("exitCode = " + exitCode);
         }
-        log("exitCode = " + exitCode);
+
         return exitCode;
     }
 
@@ -83,5 +97,4 @@ public class ProcessJobContainer extends AbstractJob {
         }
         log("cancel job end");
     }
-
 }

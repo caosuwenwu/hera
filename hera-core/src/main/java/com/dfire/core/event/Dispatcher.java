@@ -1,17 +1,15 @@
 package com.dfire.core.event;
 
 import com.dfire.core.event.base.AbstractObservable;
-import com.dfire.core.event.base.ApplicationEvent;
-import com.dfire.core.event.base.EventType;
 import com.dfire.core.event.base.MvcEvent;
 import com.dfire.core.event.handler.AbstractHandler;
 import com.dfire.core.event.handler.JobHandler;
 import com.dfire.core.event.listenter.AbstractListener;
+import com.dfire.event.ApplicationEvent;
+import com.dfire.event.EventType;
 import com.dfire.logs.ErrorLog;
-import com.dfire.logs.ScheduleLog;
 import com.google.common.collect.Lists;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +18,7 @@ import java.util.List;
 /**
  * @author: <a href="mailto:lingxiao@2dfire.com">凌霄</a>
  * @time: Created in 11:00 2018/1/4
- * @desc hera中的任务事件observer,接受事件，全局广播dispatch
+ * @desc hera中的任务事件observer, 接受事件，全局广播dispatch
  */
 public class Dispatcher extends AbstractObservable {
 
@@ -80,18 +78,21 @@ public class Dispatcher extends AbstractObservable {
             if (fireEvent(beforeDispatch, mvcEvent)) {
                 List<AbstractHandler> jobHandlersCopy = Lists.newArrayList(jobHandlers);
                 for (AbstractHandler jobHandler : jobHandlersCopy) {
-                    if (jobHandler.canHandle(applicationEvent)) {
-                        if (!jobHandler.isInitialized()) {
-                            jobHandler.setInitialized(true);
+                    try {
+                        if (jobHandler.canHandle(applicationEvent)) {
+                            if (!jobHandler.isInitialized()) {
+                                jobHandler.setInitialized(true);
+                            }
+                            jobHandler.handleEvent(applicationEvent);
                         }
-                        jobHandler.handleEvent(applicationEvent);
+                    } catch (Exception e) {
+                        ErrorLog.error(((JobHandler) jobHandler).getActionId() + "广播异常", e);
                     }
                 }
                 fireEvent(afterDispatch, mvcEvent);
             }
         } catch (Exception e) {
-            ErrorLog.error("global dispatch job event error");
-            throw new RuntimeException(e);
+            ErrorLog.error("global dispatch job event error", e);
         }
 
     }

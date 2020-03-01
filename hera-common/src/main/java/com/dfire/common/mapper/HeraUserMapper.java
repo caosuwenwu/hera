@@ -41,7 +41,7 @@ public interface HeraUserMapper {
     @Lang(HeraSelectLangDriver.class)
     HeraUser findById(Integer id);
 
-    @Select("SELECT * FROM hera_user WHERE NAME = #{name}")
+    @Select("SELECT * FROM hera_user WHERE NAME = #{name} limit 1")
     @Lang(HeraUpdateLangDriver.class)
     HeraUser getByName(HeraUser heraUser);
 
@@ -52,5 +52,8 @@ public interface HeraUserMapper {
     @Update("update hera_user set is_effective = #{isEffective} where id = #{id}")
     int updateEffective(@Param("id") Integer id, @Param("isEffective") String effective);
 
+
+    @Select("select id,name from hera_user where is_effective = 1")
+    List<HeraUser> selectGroups();
 
 }

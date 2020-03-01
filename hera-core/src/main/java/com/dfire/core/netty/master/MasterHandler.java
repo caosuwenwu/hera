@@ -3,6 +3,7 @@ package com.dfire.core.netty.master;
 import com.dfire.common.util.NamedThreadFactory;
 import com.dfire.core.netty.HeraChannel;
 import com.dfire.core.netty.NettyChannel;
+import com.dfire.core.netty.cluster.FailBackCluster;
 import com.dfire.core.netty.listener.ResponseListener;
 import com.dfire.core.netty.master.response.MasterHandleRequest;
 import com.dfire.core.netty.master.response.MasterHandlerWebResponse;
@@ -39,6 +40,7 @@ public class MasterHandler extends ChannelInboundHandlerAdapter {
      */
     private MasterContext masterContext;
 
+    private volatile boolean shutdown = false;
 
     public MasterHandler(MasterContext masterContext) {
         this.masterContext = masterContext;
@@ -50,7 +52,7 @@ public class MasterHandler extends ChannelInboundHandlerAdapter {
         executor.execute(() -> {
                     Future<ChannelResponse> future;
                     ChannelResponse response;
-                    while (true) {
+                    while (!shutdown) {
                         try {
                             future = completionService.take();
                             response = future.get();
@@ -59,14 +61,13 @@ public class MasterHandler extends ChannelInboundHandlerAdapter {
                             TaskLog.info("3-2.MasterHandler:-->master send response success, requestId={}", response.webResponse.getRid());
                         } catch (Exception e) {
                             ErrorLog.error("master handler future take error:{}", e);
-                            e.printStackTrace();
                         } catch (Throwable throwable) {
                             ErrorLog.error("master handler future take throwable{}", throwable);
-                            throwable.printStackTrace();
                         }
                     }
                 }
         );
+        executor.shutdown();
     }
 
     @Override
@@ -94,32 +95,33 @@ public class MasterHandler extends ChannelInboundHandlerAdapter {
                 switch (webRequest.getOperate()) {
                     case ExecuteJob:
                         completionService.submit(() ->
-                                new ChannelResponse(new NettyChannel(channel), MasterHandlerWebResponse.handleWebExecute(masterContext, webRequest)));
+                                new ChannelResponse(FailBackCluster.wrap(channel), MasterHandlerWebResponse.handleWebExecute(masterContext, webRequest)));
                         break;
                     case CancelJob:
                         completionService.submit(() ->
-                                new ChannelResponse(new NettyChannel(channel), MasterHandlerWebResponse.handleWebCancel(masterContext, webRequest)));
+                                new ChannelResponse(FailBackCluster.wrap(channel), MasterHandlerWebResponse.handleWebCancel(masterContext, webRequest)));
                         break;
                     case UpdateJob:
                         completionService.submit(() ->
-                                new ChannelResponse(new NettyChannel(channel), MasterHandlerWebResponse.handleWebUpdate(masterContext, webRequest)));
+                                new ChannelResponse(FailBackCluster.wrap(channel), MasterHandlerWebResponse.handleWebUpdate(masterContext, webRequest)));
                         break;
                     case ExecuteDebug:
                         completionService.submit(() ->
-                                new ChannelResponse(new NettyChannel(channel), MasterHandlerWebResponse.handleWebDebug(masterContext, webRequest)));
+                                new ChannelResponse(FailBackCluster.wrap(channel), MasterHandlerWebResponse.handleWebDebug(masterContext, webRequest)));
                         break;
                     case GenerateAction:
                         completionService.submit(() ->
-                                new ChannelResponse(new NettyChannel(channel), MasterHandlerWebResponse.generateActionByJobId(masterContext, webRequest)));
+                                new ChannelResponse(FailBackCluster.wrap(channel), MasterHandlerWebResponse.generateActionByJobId(masterContext, webRequest)));
                         break;
 
                     case GetAllHeartBeatInfo:
                         completionService.submit(() ->
-                                new ChannelResponse(new NettyChannel(channel), MasterHandlerWebResponse.buildJobQueueInfo(masterContext, webRequest)));
+                                new ChannelResponse(FailBackCluster.wrap(channel), MasterHandlerWebResponse.buildJobQueueInfo(masterContext, webRequest)));
                         break;
                     case GetAllWorkInfo:
                         completionService.submit(() ->
-                                new ChannelResponse(new NettyChannel(channel), MasterHandlerWebResponse.buildAllWorkInfo(masterContext, webRequest)));
+                                new ChannelResponse(FailBackCluster.wrap(channel), MasterHandlerWebResponse.buildAllWorkInfo(masterContext, webRequest)));
+                        break;
                     default:
                         ErrorLog.error("unknown webRequest operate error:{}", webRequest.getOperate());
                         break;
@@ -136,7 +138,7 @@ public class MasterHandler extends ChannelInboundHandlerAdapter {
                             listener.onResponse(response);
                         }
                     } catch (InvalidProtocolBufferException e) {
-                        e.printStackTrace();
+                        ErrorLog.error("解析消息异常", e);
                     }
                 });
 
@@ -147,7 +149,7 @@ public class MasterHandler extends ChannelInboundHandlerAdapter {
                     try {
                         webResponse = WebResponse.newBuilder().mergeFrom(socketMessage.getBody()).build();
                     } catch (InvalidProtocolBufferException e) {
-                        e.printStackTrace();
+                        ErrorLog.error("解析消息异常", e);
                     }
                     SocketLog.info("6.MasterHandler:receiver socket info from work {}, webResponse is {}", ctx.channel().remoteAddress(), webResponse.getRid());
                     for (ResponseListener listener : listeners) {
@@ -165,11 +167,12 @@ public class MasterHandler extends ChannelInboundHandlerAdapter {
     public void channelRegistered(ChannelHandlerContext ctx) {
         masterContext.getThreadPool().execute(() -> {
             Channel channel = ctx.channel();
-            masterContext.getWorkMap().put(channel, new MasterWorkHolder(new NettyChannel(ctx.channel())));
+            masterContext.getWorkMap().put(channel, new MasterWorkHolder(FailBackCluster.wrap(channel)));
             SocketAddress remoteAddress = channel.remoteAddress();
             SocketLog.info("worker client channel registered connect success : {}", remoteAddress.toString());
         });
     }
+
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
         masterContext.getThreadPool().execute(() -> {
@@ -203,6 +206,10 @@ public class MasterHandler extends ChannelInboundHandlerAdapter {
 
     public void removeListener(ResponseListener listener) {
         listeners.remove(listener);
+    }
+
+    public void shutdown() {
+        shutdown = true;
     }
 
 

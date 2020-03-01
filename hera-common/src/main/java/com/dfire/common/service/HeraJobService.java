@@ -25,6 +25,10 @@ public interface HeraJobService {
 
     HeraJob findById(int id);
 
+    Integer findMustEndMinute(int id);
+
+    HeraJob findMemById(int id);
+
     List<HeraJob> findByIds(List<Integer> list);
 
     List<HeraJob> findByPid(int groupId);
@@ -38,19 +42,12 @@ public interface HeraJobService {
 
     boolean changeSwitch(Integer id, Integer status);
 
-    JsonResponse checkAndUpdate(HeraJob heraJob);
 
     Map<String, Object> findCurrentJobGraph(int jobId, Integer type);
 
 
     List<Integer> findJobImpact(int jobId, Integer type);
 
-    /**
-     * 构建依赖图边
-     *
-     * @return
-     */
-    List<JobRelation> getJobRelations();
 
 
     List<HeraJob> findDownStreamJob(Integer jobId);
@@ -61,4 +58,13 @@ public interface HeraJobService {
 
 
     boolean changeParent(Integer newId, Integer parentId);
+
+    boolean isRepeat(Integer jobId);
+
+    Integer updateScript(Integer id, String script);
+
+    Integer selectMaxId();
+    
+    HeraJob copyJobFromExistsJob(Integer jobId);
+
 }

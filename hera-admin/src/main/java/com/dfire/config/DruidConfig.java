@@ -21,7 +21,7 @@ import javax.sql.DataSource;
 public class DruidConfig {
 
 
-    @Bean(destroyMethod = "close", initMethod = "init")
+    @Bean
     @Primary
     @ConfigurationProperties("druid.datasource")
     public DataSource druidDateSource() {
@@ -44,7 +44,6 @@ public class DruidConfig {
     @Primary
     public FilterRegistrationBean filterRegistrationBean() {
         FilterRegistrationBean filterRegistrationBean = new FilterRegistrationBean(new WebStatFilter());
-
         filterRegistrationBean.addInitParameter("exclusions","*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*");
         return filterRegistrationBean;
     }

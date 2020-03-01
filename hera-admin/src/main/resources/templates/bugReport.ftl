@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
 <head>
-    <title>任务调度中心</title>
+    <title>建议&留言</title>
   	<#import "/common/common.macro.ftl" as netCommon>
 	<@netCommon.commonStyle />
-    <link rel="stylesheet" href="${request.contextPath}/plugins/layui/css/layui.css">
-    <link rel="stylesheet" href="${request.contextPath}/css/bugReport.css">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <link rel="stylesheet" href="${request.contextPath}/static/plugins/layui/css/layui.css">
+    <link rel="stylesheet" href="${request.contextPath}/static/css/bugReport.css">
 </head>
 
 
@@ -38,9 +39,9 @@
 </div>
 
 <@netCommon.commonScript />
-<script src="${request.contextPath}/plugins/layui/layui.js"></script>
+<script src="${request.contextPath}/static/plugins/layui/layui.js"></script>
 <script src="http://pv.sohu.com/cityjson?ie=utf-8"></script>
-<script src="${request.contextPath}/js/bugReport.js"></script>
+<script src="${request.contextPath}/static/js/bugReport.js"></script>
 </body>
 
 </html>

@@ -1,6 +1,7 @@
 package com.dfire.common.util;
 
 import com.dfire.common.kv.Tuple;
+import com.dfire.logs.ErrorLog;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 
@@ -31,6 +32,10 @@ public class ActionUtil {
      * 当前时刻生成版本格式
      */
     public static final String ACTION_VERSION_CURR = "yyyyMMddHHmmss0000";
+    /**
+     * 当前小时版本格式
+     */
+    public static final String ACTION_VERSION_HOUR = "yyyyMMddHH00000000";
 
     /**
      * 初始化今天凌晨的版本
@@ -56,7 +61,7 @@ public class ActionUtil {
     /**
      * 生成今天 Action版本的最早时间
      */
-    public static final int ACTION_CREATE_MIN_HOUR = 7;
+    public static final int ACTION_CREATE_MIN_HOUR = 6;
 
 
     public static String getTodayString() {
@@ -84,6 +89,10 @@ public class ActionUtil {
         return new DateTime().toString(ACTION_VERSION_CURR);
     }
 
+    public static String getCurrHourVersion() {
+        return new DateTime().toString(ACTION_VERSION_HOUR);
+    }
+
     public static Long getLongCurrActionVersion() {
         return Long.parseLong(new DateTime().toString(ACTION_VERSION_CURR));
     }
@@ -93,7 +102,18 @@ public class ActionUtil {
 
     }
 
-    public static String getActionVersionByTime(Date nowTime) {
+    public static long getMillis() {
+        return System.currentTimeMillis();
+
+    }
+
+
+    public static String getActionVersionByDate(Date date) {
+        return new DateTime(date).toString(ACTION_VERSION_INIT);
+
+    }
+
+    public static String getActionVersionPrefix(Date nowTime) {
         return new DateTime(nowTime).toString(ACTION_VERSION_PREFIX);
     }
 
@@ -128,7 +148,7 @@ public class ActionUtil {
         try {
             result = simpleDateFormat.parse(tmp);
         } catch (ParseException e) {
-            e.printStackTrace();
+            ErrorLog.error("转换日期异常", e);
         }
         return result;
     }
@@ -137,7 +157,7 @@ public class ActionUtil {
         return ActionUtil.getCurrActionVersion().compareTo(actionId) <= 0;
     }
 
-    public static boolean isInitActionVersion(String actionId) {
+    public static boolean isTodayActionVersion(String actionId) {
         return ActionUtil.getInitActionVersion().compareTo(actionId) <= 0;
     }
 

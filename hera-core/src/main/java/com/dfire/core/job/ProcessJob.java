@@ -2,9 +2,11 @@ package com.dfire.core.job;
 
 import com.alibaba.fastjson.JSONObject;
 import com.dfire.common.constants.Constants;
+import com.dfire.common.exception.HeraCaughtExceptionHandler;
+import com.dfire.common.exception.HeraException;
 import com.dfire.common.util.HierarchyProperties;
-import com.dfire.core.config.HeraGlobalEnvironment;
-import com.dfire.core.exception.HeraCaughtExceptionHandler;
+import com.dfire.config.HeraGlobalEnv;
+import com.dfire.logs.ErrorLog;
 import com.dfire.logs.HeraLog;
 import com.dfire.logs.TaskLog;
 
@@ -20,25 +22,26 @@ import java.util.concurrent.CountDownLatch;
  * @time: Created in 11:01 2018/3/23
  * @desc 通过操作系统创建进程Process的Job任务
  */
-public abstract class ProcessJob extends AbstractJob implements Job {
+public abstract class ProcessJob extends AbstractJob {
 
     protected volatile Process process;
     protected final Map<String, String> envMap;
     private int exitCode;
-    private volatile int exceptionCode = -1;
 
 
     public ProcessJob(JobContext jobContext) {
         super(jobContext);
-        envMap = HeraGlobalEnvironment.userEnvMap;
+        envMap = HeraGlobalEnv.userEnvMap;
     }
 
     /**
-     * 组装脚本执行命令
+     * 组装命令
      *
-     * @return
+     * @return cmdList
+     * @throws HeraException 组装异常
      */
-    public abstract List<String> getCommandList();
+    public abstract List<String> getCommandList() throws HeraException;
+
 
     @Override
     public int run() throws Exception {
@@ -57,7 +60,7 @@ public abstract class ProcessJob extends AbstractJob implements Job {
             try {
                 process = builder.start();
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new HeraException("执行脚本" + command + "失败", e);
             }
             String threadName;
             if (jobContext.getHeraJobHistory() != null && jobContext.getHeraJobHistory().getJobId() != null) {
@@ -78,13 +81,13 @@ public abstract class ProcessJob extends AbstractJob implements Job {
                 exitCode = process.waitFor();
                 latch.await();
             } catch (InterruptedException e) {
-                exceptionCode = Constants.INTERRUPTED_EXIT_CODE;
+                exitCode = Constants.INTERRUPTED_EXIT_CODE;
                 log(e);
             } finally {
                 process = null;
             }
         }
-        return exceptionCode == -1 ? exitCode : exceptionCode;
+        return exitCode;
     }
 
 
@@ -138,15 +141,15 @@ public abstract class ProcessJob extends AbstractJob implements Job {
             commands.add(arg);
         }
         TaskLog.info("5.2 ProcessJob :组装后的命令为：{}", JSONObject.toJSONString(commands));
-        return commands.toArray(new String[commands.size()]);
+        return commands.toArray(new String[0]);
     }
 
     @Override
     public void cancel() {
         try {
             new CancelHadoopJob(jobContext).run();
-        } catch (Exception e1) {
-            log(e1);
+        } catch (Exception e) {
+            log(e);
         }
         //强制kill 进程
         if (process != null) {
@@ -154,8 +157,13 @@ public abstract class ProcessJob extends AbstractJob implements Job {
             try {
                 process.destroy();
                 int pid = getProcessId();
-                String st = "sudo sh -c \"cd; pstree " + pid + " -p | grep -o '([0-9]*)' | awk -F'[()]' '{print \\$2}' | xargs kill -9\"";
-                String[] commands = {"sudo", "sh", "-c", st};
+                String st;
+                if (HeraGlobalEnv.isEmrJob()) {
+                    st = "kill -9 " + pid;
+                } else {
+                    st = "sudo sh -c \"cd; pstree " + pid + " -p | grep -o '([0-9]*)' | awk -F'[()]' '{print \\$2}' | xargs kill -9\"";
+                }
+                String[] commands = {"sh", "-c", st};
                 ProcessBuilder processBuilder = new ProcessBuilder(commands);
                 try {
                     process = processBuilder.start();
@@ -183,24 +191,7 @@ public abstract class ProcessJob extends AbstractJob implements Job {
         return processId;
     }
 
-    @Override
-    protected String getProperty(String key, String defaultValue) {
-        String value = jobContext.getProperties().getProperty(key);
-        if (value == null) {
-            value = defaultValue;
-        }
-        return value;
-    }
 
-    @Override
-    public HierarchyProperties getProperties() {
-        return jobContext.getProperties();
-    }
-
-    @Override
-    public JobContext getJobContext() {
-        return jobContext;
-    }
 
     /**
      * @author: <a href="mailto:lingxiao@2dfire.com">凌霄</a>
@@ -220,14 +211,13 @@ public abstract class ProcessJob extends AbstractJob implements Job {
 
         @Override
         public void run() {
-            try {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "utf-8"));
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "utf-8"))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     logConsole(line);
                 }
             } catch (Exception e) {
-                exceptionCode = Constants.LOG_EXIT_CODE;
+                exitCode = Constants.LOG_EXIT_CODE;
                 HeraLog.error("接受日志异常:{}", e);
                 log(threadName + ": 接收日志出错，退出日志接收");
             } finally {

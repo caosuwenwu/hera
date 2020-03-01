@@ -10,6 +10,7 @@ import com.dfire.common.enums.TriggerTypeEnum;
 import com.dfire.common.kv.Tuple;
 import com.dfire.common.vo.JobStatus;
 import com.dfire.common.vo.LogContent;
+import com.dfire.logs.ErrorLog;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 
@@ -45,9 +46,9 @@ public class BeanConvertUtils {
         HeraJobHistoryVo heraJobHistoryVo = HeraJobHistoryVo.builder().build();
         BeanUtils.copyProperties(heraJobHistory, heraJobHistoryVo);
         if (StringUtils.isBlank(heraJobHistory.getLog())) {
-            heraJobHistoryVo.setLog(LogContent.builder().build());
+            heraJobHistoryVo.setLog(new LogContent());
         } else {
-            heraJobHistoryVo.setLog(LogContent.builder().content(new StringBuffer(heraJobHistory.getLog())).build());
+            heraJobHistoryVo.setLog(new LogContent(new StringBuffer(heraJobHistory.getLog())));
         }
         heraJobHistoryVo.setProperties(StringUtil.convertStringToMap(heraJobHistory.getProperties()));
         heraJobHistoryVo.setStatusEnum(StatusEnum.parse(heraJobHistory.getStatus()));
@@ -87,9 +88,9 @@ public class BeanConvertUtils {
             heraJobHistoryVo.setGmtModified(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(heraDebugHistory.getGmtModified()));
         }
         if (StringUtils.isBlank(heraDebugHistory.getLog())) {
-            heraJobHistoryVo.setLog(LogContent.builder().build());
+            heraJobHistoryVo.setLog(new LogContent());
         } else {
-            heraJobHistoryVo.setLog(LogContent.builder().content(new StringBuffer(heraDebugHistory.getLog())).build());
+            heraJobHistoryVo.setLog(new LogContent(new StringBuffer(heraDebugHistory.getLog())));
         }
         return heraJobHistoryVo;
 
@@ -115,7 +116,7 @@ public class BeanConvertUtils {
                 jobHistory.setGmtModified(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(jobHistoryVo.getGmtModified()));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            ErrorLog.error("解析日期异常", e);
         }
         return jobHistory;
     }
@@ -198,7 +199,11 @@ public class BeanConvertUtils {
         heraActionVo.setPostProcessors(StringUtil.convertProcessorToList(action.getPostProcessors()));
         heraActionVo.setPreProcessors(StringUtil.convertProcessorToList(action.getPreProcessors()));
         heraActionVo.setResources(StringUtil.convertResources(action.getResources()));
-        heraActionVo.setConfigs(StringUtil.convertStringToMap(action.getConfigs()));
+        try {
+            heraActionVo.setConfigs(StringUtil.convertStringToMap(action.getConfigs()));
+        } catch (RuntimeException e) {
+            ErrorLog.error("json parse error on " + action.getId(), e);
+        }
         heraActionVo.setRunType(JobRunTypeEnum.parser(action.getRunType()));
         heraActionVo.setScheduleType(JobScheduleTypeEnum.parser(action.getScheduleType()));
         heraActionVo.setId(String.valueOf(action.getId()));

@@ -4,7 +4,6 @@
     <title>机器管理</title>
   	<#import "/common/common.macro.ftl" as netCommon>
 	<@netCommon.commonStyle />
-    <link href="https://cdn.bootcss.com/bootstrap-table/1.11.1/bootstrap-table.min.css" rel="stylesheet">
 </head>
 
 <style type="text/css">
@@ -48,7 +47,7 @@
     <form class="layui-form layui-form-pane" action="" id="addHostGroupForm">
 
         <div class="layui-form-item"style="display: none">
-            <label class="layui-form-label">ip地址</label>
+            <label class="layui-form-label"></label>
             <div class="layui-input-block">
                 <input type="text" name="id"
                        autocomplete="off"
@@ -78,7 +77,7 @@
     </form>
 </script>
 
-<script src="${request.contextPath}/js/workManage.js"></script>
+<script src="${request.contextPath}/static/js/workManage.js"></script>
 
 </body>
 

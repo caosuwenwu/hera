@@ -1,5 +1,6 @@
 package com.dfire.common.mybatis;
 
+import com.dfire.common.config.SkipColumn;
 import com.google.common.base.CaseFormat;
 import org.apache.ibatis.mapping.SqlSource;
 import org.apache.ibatis.scripting.LanguageDriver;
@@ -29,13 +30,16 @@ public class HeraInsertLangDriver extends XMLLanguageDriver implements LanguageD
             sb.append("(");
 
             for (Field field : parameterType.getDeclaredFields()) {
-                sb.append(CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, field.getName()) + ",");
-                tmp.append("#{" + field.getName() + "},");
+                SkipColumn skipColumn = field.getAnnotation(SkipColumn.class);
+                if (skipColumn == null) {
+                    sb.append(CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, field.getName())).append(",");
+                    tmp.append("#{").append(field.getName()).append("},");
+                }
             }
 
             sb.deleteCharAt(sb.lastIndexOf(","));
             tmp.deleteCharAt(tmp.lastIndexOf(","));
-            sb.append(") values (" + tmp.toString() + ")");
+            sb.append(") values (").append(tmp.toString()).append(")");
 
             script = matcher.replaceAll(sb.toString());
             script = "<script>" + script + "</script>";

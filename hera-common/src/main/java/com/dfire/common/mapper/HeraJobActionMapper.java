@@ -60,8 +60,8 @@ public interface HeraJobActionMapper {
     @Update("update hera_action set status = #{status},ready_dependency=#{readyDependency} where id = #{id}")
     Integer updateStatusAndReadDependency(HeraAction heraAction);
 
-    @Select("select * from hera_action where id >= #{today}")
-    List<HeraAction> selectTodayAction(String today);
+    @Select("select * from hera_action where id >= #{action}")
+    List<HeraAction> selectAfterAction(long action);
 
     /**
      * 根据JobId 获取版本
@@ -95,4 +95,8 @@ public interface HeraJobActionMapper {
             "<if test=\"status != null\" > and status=#{status} </if> ")
     @Lang(HeraListInLangDriver.class)
     Integer findByJobIdsCount(Map<String, Object> params);
+
+    @Delete("delete from hera_action where id < DATE_SUB(CURRENT_DATE(),INTERVAL #{beforeDay} DAY) * 10000000000;")
+    Integer deleteHistoryRecord(Integer beforeDay);
+
 }
